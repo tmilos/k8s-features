@@ -1,0 +1,1 @@
+require('./src/step_definitions/index.cjs');

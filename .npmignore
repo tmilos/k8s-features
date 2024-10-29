@@ -1,0 +1,7 @@
+/.vscode
+/node_modules
+/src
+/scripts
+cucumber-report.html
+jest.config.js
+index.*
