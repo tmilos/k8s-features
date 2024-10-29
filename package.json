@@ -1,6 +1,6 @@
 {
   "name": "k8s-features",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "dist/index.cjs",
   "scripts": {
     "test": "jest",
@@ -10,7 +10,13 @@
   "author": "",
   "license": "MIT",
   "description": "A Cucumber-js base library for Kubernetes Gherkin tests, with base world class, basic steps, reusable utility functions and k8s client",
-  "keywords": ["cucumber", "cucumber-js", "javascript", "gherkin", "kubernetes"],
+  "keywords": [
+    "cucumber",
+    "cucumber-js",
+    "javascript",
+    "gherkin",
+    "kubernetes"
+  ],
   "homepage": "https://github.com/tmilos/k8s-features#readme",
   "repository": {
     "type": "git",
