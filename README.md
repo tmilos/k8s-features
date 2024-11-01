@@ -23,7 +23,7 @@ Feature: Test feature
     Given resources are watched:
       | Alias | Kind      | ApiVersion | Name            | Namespace  |
       | cm    | ConfigMap | v1         | `test-${id(4)}` |            |
-    When ConfigMap cm is applied
+    When ConfigMap cm is created
     Then eventually "cm.data.foo == 'bar'" is ok 
 EOF
 ```
@@ -34,14 +34,14 @@ Write a support step:
 cat << EOF > src/myStep.cjs
 const { When } = require('@cucumber/cucumber');
 
-When('ConfigMap cm is applied', async function(alias) {
+When('ConfigMap cm is created', async function(alias) {
   const manifest = `
 apiVersion: v1
 Kind: ConfigMap
 data:
   foo: bar
 `;
-  await this.applyWatchedManifest(alias, manifest);
+  await this.applyWatchedManifest(alias, manifest, true);
 });
 
 EOF
@@ -62,12 +62,8 @@ export default function() {
         ],
         require: [
           './node_modules/k8s-features/steps.cjs',
-        ],
-        require: [
           './src/**/*.cjs',
         ],
-        forceExit: true,
-        publish: false,
         formatOptions: {
           colorsEnabled: true,
           theme: {
@@ -106,13 +102,28 @@ you will be ok. Otherwise, take appropriate measutes to secure yourself.
 ### Evaluation context
 
 In the javascript sandbox used for expression evaluation following globals are set:
-* all watched/declared resources by their Alias name
+* all watched/declared resources by their Alias name as key
+* `_` object with a property for each watched/declared resource with all declated and evaluated
+  fields, plus the `resource` property of the type `V1APIResource`. This is usefull in case when 
+  one declated resource depends on the templated name of the other that does not exist yet. In that
+  case instead of `first.metadata.name` you would do `_.first.name`.
 * namespace - the namespace world param, defaults to `default` if not specified
 * id() - a function that generates random string
 * findCondition() - a function that returns condition of specified type for the given object
 * findConditionTrue() - a function that returns condition with status 'True' of specified type for the given object
 * hasFinalizer() - a function that returns boolean if given object has specified finalizer
 
+### Template evaluation
+
+In some steps like resource declatation for some data table columns it is possible to provide
+both constant literal value and javascript template literal that will be evaluated. For example
+for the column `Name` of the resource declaration step you can provide:
+
+    | Alias | ... | Name                | 
+    | aa    | ... | fixed               |
+    | bb    | ... | `test-${_.aa.name}` | 
+
+That would produce `aa` with name `fixed`, and `bb` with name `test-fixed`.
 
 ## Steps
 
@@ -127,6 +138,7 @@ In the javascript sandbox used for expression evaluation following globals are s
     | Alias | Kind      | ApiVersion | Name            | Namespace |
     | cm    | ConfigMap | v1         | `test-${id(4)}` |           |
 ```
+The step `resources are watched` and `resources are watched` are synonyms are there's no difference.
 
 Declares alias, kind, apiVersion, name and optional namespace of the resources that will be 
 watched. At the moment of this step execution, the declared resource must exist in the cluster,
@@ -143,7 +155,8 @@ For Name and Namespace columns the expressions can be used, that are evaluated o
 execution. If an undefined value from the context is used in the expression, like for example a resource 
 that does not exist yet, the error will be thrown and test will fail. 
 
-### When resource X is applied
+
+### When resource {word} is applied
 
 ```gherkin
   When resource X is applied:
@@ -158,6 +171,23 @@ that does not exist yet, the error will be thrown and test will fail.
 Executes the server side apply with the given yaml manifest on the watched resource X. The apiVersion, kind,
 name and namespace are optional, and if ommitted they will be taken from the resource declaration. 
 
+
+### When resource {word} is created
+
+```gherkin
+  When resource X is created:
+    """
+    apiVersion: v1
+    kind: ConfigMap
+    data:
+      foo: bar
+    """
+```
+
+Same as `resource X is applied` but the watched item is marked as `created` and at the end of the test
+will be deleted.
+
+
 ### Then "expression" is ok
 
 ```gherkin
@@ -166,6 +196,7 @@ name and namespace are optional, and if ommitted they will be taken from the res
 
 Evalutes the expression and passes if value is truthy.
 
+
 ### Then eventually "expression" is ok 
 
 ```gherkin
@@ -173,6 +204,7 @@ Evalutes the expression and passes if value is truthy.
 ```
 
 Keeps evaluating the expression in the loop until it's value becomes truthy when it pass.
+
 
 ### Then eventually "expression" is ok, unless
 
@@ -185,7 +217,7 @@ Keeps evaluating the expression in the loop until it's value becomes truthy when
 or until any of the unless expressions becomes truthy when it fails. 
 
 
-### When resource X is deleted
+### When resource {word} is deleted
 
 ```gherkin
   When resource cm is deleted
@@ -193,7 +225,8 @@ or until any of the unless expressions becomes truthy when it fails.
 
 Calls the K8S delete API on the specified watched/declared resource. 
 
-### Then resource X does not exist
+
+### Then resource {word} does not exist
 
 ```gherkin
   Then resource cm does not exist
@@ -203,13 +236,70 @@ Passes if the specified watched/declated resource does not exist, ie
 was deleted.
 
 
-### Then eventually resource X does not exist
+### Then eventually resource {word} does not exist
 
 ```gherkin
   Then eventually resource cm does not exist
 ```
 
 Loops until the specified watched/declated resource does not exist.
+
+
+### apiVersion {word} does not exist
+
+Passes if specified apiVersion does not exist, and fails if it exists.
+
+
+### apiVersion X exists
+
+Passes if specified apiVersion exists, and fails if it does not exist.
+
+
+### eventually kind {word} of {word} does not exist
+
+Keeps checking in a loop if the given kind in apiVersion does not exist. Resolves when
+it doesn't exist. 
+
+
+### eventually kind {word} of {word} exists
+
+Keeps checking in a loop if the given kind in apiVersion exists. Resolves when
+it exists. 
+
+
+### kind {word} of {word} does not exist
+
+Passes if specified kind in apiVersion does not exist, and fails if it exists.
+
+
+### kind {word} of {word} exists
+
+Passes if specified kind in apiVersion exists, and fails if it does not exist.
+
+
+### kinds in apiVersion {word} do not exist
+
+For the given apiVersion it checks if all kinds given in a data table do not
+exist. If any kind exsits, it fails. Data table is without headers, with a 
+single column, listing kinds. 
+
+```gherik
+    When kinds in apiVersion example.com do not exist
+      | KindOne |
+      | KineTwo |
+```
+
+### kinds in apiVersion {word} exist
+
+For the given apiVersion it checks if all kinds given in a data table 
+exist. If any kind does not exsit, it fails. Data table is without headers, with a 
+single column, listing kinds. 
+
+```gherik
+    When kinds in apiVersion example.com exist
+      | KindOne |
+      | KineTwo |
+```
 
 
 ### Then PVC X file operations succeed
@@ -322,21 +412,23 @@ and if object has empty apiVersion, kind, name or namespace it will populate the
 `item` argument. 
 
 
-#### async applyObject(obj: KubernetesObject, item?: ResourceDeclaration): Promise<void>
+#### async applyObject(obj: KubernetesObject, item?: ResourceDeclaration, deleteOnFinish = false): Promise<void>
 
 Does a server side apply patch call to the K8S API for the given object. 
 If the optional argument `item` is provided
 and if object has empty apiVersion, kind, name or namespace it will populate them from the
 `item` argument. If the optional argument `item` is provided, it will mark it as created by 
-the lib and after all tests are done it will delete it. 
+the lib and after all tests are done it will delete it. If the optional argument 
+`deleteOnFinish` is provided it will mark the the item as created, and on scenario end 
+that Kubernetes object will be deleted without wait.
 
 
-#### async applyYamlManifest(manifest: string, item?: ResourceDeclaration): Promise<void>
+#### async applyYamlManifest(manifest: string, item?: ResourceDeclaration, deleteOnFinish = false): Promise<void>
 
 Parse the given yaml `manifest`, and calls the `applyObject()`. 
 
 
-#### async applyWatchedManifest(alias: string, manifest: string): Promise<void>
+#### async applyWatchedManifest(alias: string, manifest: string, deleteOnFinish = false): Promise<void>
 
 Finds the watched item for the given `alias`, and calls `applyYamlManifest()`.
 

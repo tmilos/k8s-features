@@ -1,1 +1,1 @@
-require('./src/step_definitions/index.cjs');
+require('./dist/src/step_definitions/index.cjs');

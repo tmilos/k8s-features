@@ -1,6 +1,6 @@
 const { KubeConfig, V1APIResource, V1APIResourceList } = require('@kubernetes/client-node');
 const { getAsync } = require('./http.cjs');
-
+const { ExpiringMap } = require('../util/expiringMap.cjs');
 /**
  * @typedef ListResponseType
  * @property {import('node:http').IncomingMessage} response
@@ -10,21 +10,27 @@ const { getAsync } = require('./http.cjs');
 class KindToResourceMapper {
 
   /**
-   * 
    * @param {KubeConfig} kc 
    */
-  constructor(kc) {
+  constructor(kc, clock) {
     /**
      * @type {KubeConfig}
-     */
-    this.kc = kc;
-    /**
-     * @type {Object.<string, V1APIResourceList>}
      * @private
      * @readonly
      */
-    this.cache = {};
+    this.kc = kc;
 
+    /**
+     * @type {Map<string, V1APIResourceList>}
+     * @private
+     * @readonly
+     */
+    this.cache = new ExpiringMap(3000);
+
+    /**
+     * @private
+     * @readonly
+     */
     this.opts = undefined;
   }
 
@@ -33,13 +39,13 @@ class KindToResourceMapper {
    * @returns {Promise<V1APIResource[]>}
    */
   async getAllResourcesFromApiVersion(apiVersion) {
-    if (this.cache[apiVersion]) {
-      return this.cache[apiVersion].resources;
+    if (this.cache.has(apiVersion)) {
+      return this.cache.get(apiVersion).resources;
     }
 
     await this.loadApiVersion(apiVersion);
 
-    return this.cache[apiVersion].resources;
+    return this.cache.get(apiVersion).resources;
   }
 
   /**
@@ -49,8 +55,8 @@ class KindToResourceMapper {
    * @returns {Promise<V1APIResource | undefined>}
    */
   async getResourceFromKind(apiVersion, kind) {
-    if (this.cache[apiVersion]) {
-      const resource = this.cache[apiVersion].resources.find((r) => r.kind === kind);
+    if (this.cache.has(apiVersion)) {
+      const resource = this.cache.get(apiVersion).resources.find((r) => r.kind === kind);
       if (resource) {
           return resource;
       }
@@ -58,7 +64,7 @@ class KindToResourceMapper {
 
     await this.loadApiVersion(apiVersion);
 
-    const resource = this.cache[apiVersion].resources.find((r) => r.kind === kind);
+    const resource = this.cache.get(apiVersion).resources.find((r) => r.kind === kind);
     if (resource) {
         return resource;
     }
@@ -81,7 +87,7 @@ class KindToResourceMapper {
      * @type {ListResponseType}
      */
     const resp = await getAsync(url, this.opts);
-    this.cache[apiVersion] = resp.body;
+    this.cache.set(apiVersion, resp.body);
   }
 
   /**

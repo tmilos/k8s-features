@@ -2,11 +2,10 @@ const assert = require('node:assert');
 const { ListWatch, Watch, KubernetesObject, ObjectCache, DiscoveryApi, DiscoveryV1Api, V1APIResource, ApisApi, KubeConfig } = require('@kubernetes/client-node');
 const { getListFn } = require('../k8s/list.cjs');
 const { KindToResourceMapper } = require('../k8s/kindToResourceMapper.cjs');
-const { Map } = require('../util/map.cjs');
 
 class ResourceDeclaration {
 
-  created = false;
+  deleteOnFinish = false;
 
   /**
    * @param {string} alias 
@@ -58,7 +57,7 @@ class ResourceDeclaration {
      */
     this.cache = undefined;
 
-    this.created = false;
+    this.deleteOnFinish = false;
   }
 
   /**
@@ -107,7 +106,7 @@ class WatchedResources {
     this.resourceMapper = new KindToResourceMapper(kc);
 
     /**
-     * @type {Object.<string, ObjectCache<KubernetesObject>>}
+     * @type {Map<string, ObjectCache<KubernetesObject>>}
      * @private
      * @readonly
      */
@@ -115,7 +114,7 @@ class WatchedResources {
 
     /**
      * Map of alias => ResourceDeclaration
-     * @type {Map}
+     * @type {Map<string, ResourceDeclaration>}
      * @readonly
      * @private
      */
@@ -127,12 +126,12 @@ class WatchedResources {
    * @returns {ResourceDeclaration[]}
    */
   getCreatedItems() {
-    /**
-     * @type {ResourceDeclaration[]}
-     */
+    /** @type {ResourceDeclaration[]} */
     let result = [];
-    for (let item of this.items.values()) {
-      if (item.created) {
+    /** @type {ResourceDeclaration[]} */
+    const items = this.items.values();
+    for (let item of items) {
+      if (item.deleteOnFinish) {
         result.push(item);
       }
     }
@@ -206,10 +205,21 @@ class WatchedResources {
    * @returns <Object>
    */
   contextObjects() {
-    const ctx = {};
-    for (let [alias, item] of this.items) {
+    const ctx = {
+      _: {},
+    };
+    for (/** @type [string, ResourceDeclaration] */ let [alias, item] of this.items) {
       if (item.cache) {
-        ctx[alias] = item.cache.get(item.name, item.namespace);
+        const obj = item.cache.get(item.name, item.namespace);
+        ctx[alias] = obj;
+        ctx._[alias] = {
+          apiVersion: item.apiVersion,
+          kind: item.kind,
+          name: item.name,
+          namespace: item.namespace,
+          resource: item.resource,
+          obj,
+        };
       }
     }
     return ctx

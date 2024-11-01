@@ -14,6 +14,7 @@ const { PodMountPvcPatcher } = require('../k8s/patcher/podMountPvcPatcher.cjs');
 const { AbstractFileOperation } = require('../fs/fileOperation.cjs');
 const { PodMountConfigMapPatcher } = require('../k8s/patcher/podMountConfigMapPatcher.cjs');
 const { inspect } = require('node:util');
+const { Clock } = require('../util/clock.cjs');
 
 /**
  * @typedef IMyWorldParams
@@ -45,10 +46,54 @@ class MyWorld extends World {
 
     this.eventuallyPeriodMs = 500;
 
+    this.eventuallyTimeoutSeconds = 3600;
+
     /**
      * @type {WatchedResources | undefined}
      */
     this.watchedResources = undefined;
+
+    this._clock = new Clock();
+  }
+
+  _assertString(val) {
+    ok(val);
+    ok(val.length);
+    ok(typeof val === 'string');
+  }
+
+  _assertArrayOfStrings(val, mustHaveLen = true) {
+    ok(val);
+    ok(Array.isArray(val)); 
+    if (mustHaveLen) {
+      ok(val.length);
+    }
+    val.forEach(x => this._assertString);
+  }
+
+  _assertObject(val) {
+    ok(val);
+    ok(typeof val === 'object');
+  }
+
+  _assertArrayOfObjects(val, mustHaveLen = true) {
+    ok(val);
+    ok(Array.isArray(val)); 
+    if (mustHaveLen) {
+      ok(val.length);
+    }
+    val.forEach(x => this._assertObject);
+  }
+
+  /**
+   * @param {Clock} clock 
+   */
+  setClock(clock) {
+    this._clock = clock;
+  }
+
+  getClock() {
+    return this._clock;
   }
 
   /**
@@ -74,6 +119,8 @@ class MyWorld extends World {
    * @returns {Promise}
    */
   async addWatchedResources(...resources) {
+    this._assertArrayOfObjects(resources);
+
     if (!this.watchedResources) {
       throw new Error('It seems init() method was not called in Before hook');
     }
@@ -184,26 +231,23 @@ class MyWorld extends World {
    * @returns {Promise}
    */
   async eventuallyValueIsOk(actualExp, ...unlessExpressions) {
-    //console.log(`eventually value is ${actualExp}, unless: ${unlessExpressions.join('; ')}`);
-    return new Promise(async (resolve, reject) => {
-      while (!this.stopped) {
-        const actual = this.eval(actualExp);
-        if (actual) {
-          resolve();
+    this._assertArrayOfStrings(unlessExpressions, false);
+
+    while (!this.stopped) {
+      const actual = this.eval(actualExp);
+      if (actual) {
+        return;
+      }
+      for (let unlessExp of unlessExpressions) {
+        const unlessValue = this.eval(unlessExp);
+        if (unlessValue) {
+          throw new Error(`unless expression "${unlessExp}" is ok`);
           return;
         }
-        for (let unlessExp of unlessExpressions) {
-          const unlessValue = this.eval(unlessExp);
-          if (unlessValue) {
-            reject(new Error(`unless expression "${unlessExp}" is ok`));
-            return;
-          }
-        }
-
-        await sleep(this.eventuallyPeriodMs);
       }
-      resolve();
-    });
+
+      await sleep(this.eventuallyPeriodMs);
+    }
   }
 
   /**
@@ -213,15 +257,27 @@ class MyWorld extends World {
     if (!this.watchedResources) {
       throw new Error('It seems init() method was not called in Before hook');
     }
-    console.log('Deleting created resources...');
+    /**
+     * @type {Array({item: ResourceDeclaration, obj: KubernetesObject})}
+     */
+    const itemsToDelete = [];
     for (let item of this.watchedResources.getCreatedItems()) {
       const obj = item.getObj();
       if (obj) {
+        itemsToDelete.push({item, obj});
+      }
+    }
+
+    if (itemsToDelete.length) {
+      console.log('Deleting created resources...');
+      for (let { item, obj } of itemsToDelete) {
         try {
           await this.api.delete(obj);
         } catch (e) {
-          throw new Error(`Error deleting ${item.alias} of kind ${item.kind} in group ${item.apiVersion}: ${e}`);
+          console.error(`Failed deleting ${item.alias} of kind ${item.kind} in group ${item.apiVersion}: ${"\n"}${e}`);
+          console.log();
         }
+        console.log(`${item.alias}   ${obj.apiVersion}/${obj.kind}   ${obj.metadata.namespace ? [obj.metadata.namespace,'/',obj.metadata.name].join('') : obj.metadata.name}`)
       }
     }
   }
@@ -269,9 +325,10 @@ class MyWorld extends World {
    * 
    * @param {KubernetesObject} obj 
    * @param {ResourceDeclaration | undefined} item 
+   * @param {boolean} deleteOnFinish
    * @returns {Promise}
    */
-  async applyObject(obj, item) {
+  async applyObject(obj, item, deleteOnFinish = false) {
     if (item) {
       if (!obj.metadata) {
         obj.metadata = {};
@@ -307,8 +364,8 @@ class MyWorld extends World {
       throw new Error(`Patch error: ${err}`);
     }
 
-    if (item) {
-      item.created = true;
+    if (deleteOnFinish == true) {
+      item.deleteOnFinish = true;
     }
   }
 
@@ -316,30 +373,32 @@ class MyWorld extends World {
    * 
    * @param {string} manifest 
    * @param {ResourceDeclaration | undefined} item 
+   * @param {boolean | undefined} deleteOnFinish
    * @returns {Promise}
    */
-  async applyYamlManifest(manifest, item) {
+  async applyYamlManifest(manifest, item, deleteOnFinish = false) {
     manifest = this.template('`'+manifest+'`');
     /**
      * @type {KubernetesObject}
      */
     const obj = yamlParse(manifest);
-    await this.applyObject(obj, item);
+    await this.applyObject(obj, item, deleteOnFinish);
   }
 
   /**
    * 
    * @param {string} alias 
    * @param {string} manifest 
+   * @param {boolean|undefined} deleteOnFinish
    * @returns {Promise}
    */
-  async applyWatchedManifest(alias, manifest) {
+  async applyWatchedManifest(alias, manifest, deleteOnFinish = false) {
     const item = this.getItem(alias);
     if (!item) {
       throw new Error(`The resource ${alias} is not declated`);
     }
 
-    await this.applyYamlManifest(manifest, item);
+    await this.applyYamlManifest(manifest, item, deleteOnFinish);
   }
 
   /**
@@ -357,12 +416,11 @@ class MyWorld extends World {
   }
 
   /**
-   * 
    * @param {string} alias 
    * @returns {Promise}
    */
   async eventuallyResourceDoesNotExist(alias) {
-    const startDate = new Date();
+    const startTime = this.getClock().getTime();
     
     while (!this.stopped) {
       const item = this.getItem(alias);
@@ -373,9 +431,9 @@ class MyWorld extends World {
       if (!obj) {
         return;
       }
-      const endDate = new Date();
-      const diffSeconds = (endDate.getTime() - startDate.getTime()) / 1000;
-      if (diffSeconds > 3600) {
+      const endTime = this.getClock().getTime();
+      const diffSeconds = (endTime - startTime) / 1000;
+      if (diffSeconds > this.eventuallyTimeoutSeconds) {
         throw new Error(`Timeout waiting for ${alias} to be deleted`);
       }
       await sleep(this.eventuallyPeriodMs);
@@ -420,6 +478,8 @@ class MyWorld extends World {
    * @returns {Promise<{podObj: KubernetesObject, cmObj: KubernetesObject}>}
    */
   async createPod(name, namespace, scriptLines, image = 'ubuntu', ...patches) {
+    this._assertArrayOfObjects(patches, false);
+    
     if (!name) {
       throw new Error('Pod to create must have name');
     }
@@ -489,6 +549,8 @@ ${scriptLines.map(l => '      '+l).join("\n")}
    * @returns {Promise}
    */
   async pvcFileOperations(alias, ...fileOperations) {
+    this._assertArrayOfObjects(fileOperations);
+
     if (!this.watchedResources) {
       throw new Error('It seems init() method was not called in Before hook');
     }
@@ -548,54 +610,186 @@ ${scriptLines.map(l => '      '+l).join("\n")}
   }
 
   /**
-   * 
-   * @param {string} alias 
-   * @param {string} path 
-   * @returns {Promise<string>}
+   * @param {string} apiVersion
+   * @param {...string} kinds
+   * @returns {Promise}
    */
-  async listPvcFiles(alias, path = '') {
-    if (!this.watchedResources) {
-      throw new Error('It seems init() method was not called in Before hook');
+  async kindsExist(apiVersion, ...kinds) {
+    this._assertString(apiVersion);
+    this._assertArrayOfStrings(kinds);
+
+    const allResources = await this.getAllResourcesFromApiVersion(apiVersion);
+    const existingKinds = new Map();
+    for (const res of allResources) {
+      existingKinds.set(res.kind, true);
     }
-
-    const item = this.getItem(alias);
-    if (!item) {
-      throw new Error(`Resource ${alias} is not declated`);
+    const missingKinds = [];
+    for (let kind of kinds) {
+      if (!existingKinds.has(kind)) {
+        missingKinds.push(kind);
+      }
     }
-    if (item.kind !== 'PersistentVolumeClaim') {
-      throw new Error(`Resource ${alias} must be PersistentVolumeClaim, but it is ${item.kind}`);
+    if (missingKinds.length > 0) {
+      throw new Error(`Missing kind: ${missingKinds.join(', ')}`);
     }
-    const pvcObj = item.getObj();
-    if (!pvcObj) {
-      throw new Error(`Resource ${alias} does not exist`);
-    }
-    if (!pvcObj.metadata?.name) {
-      throw new Error(`PVC ${alias} has no name`);
-    }
-    if (!pvcObj.metadata?.namespace) {
-      throw new Error(`PVC ${alias} has no namespace`);
-    }
-
-    const name = `k8f${makeid(8)}`;
-    const namespace = pvcObj.metadata.namespace;
-
-    const scriptLines = [`ls -1 ${path}`];
-
-    await this.watchedResources.add(name, 'Pod', 'v1', name, namespace);
-    await this.watchedResources.startWatches();
-
-    await this.createPod(name, namespace, scriptLines, 'ubuntu', new PodMountPvcPatcher(pvcObj.metadata.name));
-
-    await this.eventuallyValueIsOk(
-      `${name}.status.phase == "Succeeded"`, 
-      `${name}.status.phase == "Failed"`
-    );
-
-    const logs = await this.getLogs(name, namespace, name);
-
-    return logs;
   }
 
+  /**
+   * @param {string} apiVersion
+   * @param {...string} kinds
+   * @returns {Promise}
+   */
+  async kindsDoNotExist(apiVersion, ...kinds) {
+    this._assertString(apiVersion);
+    this._assertArrayOfStrings(kinds);
+
+    const allResources = await this.getAllResourcesFromApiVersion(apiVersion);
+    const existingKinds = new Map();
+    for (const res of allResources) {
+      existingKinds.set(res.kind, true);
+    }
+    const unexpectedKinds = [];
+    for (let kind of kinds) {
+      if (existingKinds.has(kind)) {
+        unexpectedKinds.push(kind);
+      }
+    }
+    if (unexpectedKinds.length > 0) {
+      throw new Error(`Unexpected kinds: ${unexpectedKinds.join(', ')}`);
+    }
+  }
+
+  /**
+   * @param {string} kind 
+   * @param {string} apiVersion 
+   * @returns {Promise}
+   */
+  async kindExists(kind, apiVersion) {
+    try {
+      await this.getAllResourcesFromApiVersion(apiVersion);
+    } catch (err) {
+      if (err.message.includes('status code 404')) {
+        throw new Error(`Kind ${kind} of ${apiVersion} does not exist`);
+      }
+      throw new Error(`Error finding resources in apiVersion ${apiVersion}: ${err.message}`, {cause: err});
+    }
+  }
+
+  /**
+   * @param {string} kind 
+   * @param {string} apiVersion 
+   * @returns {Promise}
+   */
+  async kindDoesNotExist(kind, apiVersion) {
+    try {
+      await this.getAllResourcesFromApiVersion(apiVersion);
+    } catch (err) {
+      return;
+    }
+    throw new Error(`Kind ${kind} of ${apiVersion} exist, but it's expected not to exist.`);
+  }
+
+  /**
+   * @param {string} kind 
+   * @param {string} apiVersion 
+   * @returns {Promise}
+   */
+  async eventuallyKindExists(kind, apiVersion) {
+    const startDate = new Date();
+    let list;
+
+    while (true) {
+      try {
+        list = await this.getAllResourcesFromApiVersion(apiVersion);
+      } catch (err) {
+        await sleep(this.eventuallyPeriodMs);
+        continue;
+      }
+
+      for (let res of list) {
+        if (res.kind == kind) {
+          return;
+        }
+      }
+
+      const endDate = new Date();
+      const diffSeconds = (endDate.getTime() - startDate.getTime()) / 1000;
+      if (diffSeconds > this.eventuallyTimeoutSeconds) {
+        throw new Error(`Timeout waiting for ${kind} of ${apiVersion} to exist`);
+      }
+
+      await sleep(this.eventuallyPeriodMs);
+    }
+  }
+
+  /**
+   * @param {string} kind 
+   * @param {string} apiVersion 
+   * @returns {Promise}
+   */
+  async eventuallyKindDoesNotExist(kind, apiVersion) {
+    const startDate = new Date();
+    let list;
+
+    while (true) {
+      try {
+        list = await this.getAllResourcesFromApiVersion(apiVersion);
+      } catch (err) {
+        if (err.message.includes('status code 404')) {
+          return; //apiVersion does not exist
+        }
+        // not sure what this is, just log it 
+        console.log(err);
+        continue;
+      }
+
+      for (let res of list) {
+        if (res.kind == kind) {
+          // kind still exists
+          continue;
+        }
+      }
+
+      const endDate = new Date();
+      const diffSeconds = (endDate.getTime() - startDate.getTime()) / 1000;
+      if (diffSeconds > this.eventuallyTimeoutSeconds) {
+        throw new Error(`Timeout waiting for ${kind} of ${apiVersion} not to exist`);
+      }
+
+      await sleep(this.eventuallyPeriodMs);
+    }
+  }
+
+  async apiVersionExists(apiVersion) {
+    let list;
+    try {
+      list = await this.getAllResourcesFromApiVersion(apiVersion);
+    } catch (err) {
+      if (err.message.includes('status code 404')) {
+        throw new Error(`Exepected apiVersion ${apiVersion} to exist, but it does not`);
+      }
+      throw err;
+    }
+    if (list.length == 0) {
+      throw new Error(`Expected apiVersion ${apiVersion} to exists, but it has no kinds`);
+    }
+  }
+
+  async apiVersionDoesNotExist(apiVersion) {
+    let list;
+    try {
+      list = await this.getAllResourcesFromApiVersion(apiVersion);
+    } catch (err) {
+      if (err.message.includes('status code 404')) {
+        return;
+      }
+      throw err;
+    }
+    if (list.length > 0) {
+      const kinds = list.map(r => r.kind).join(', ');
+      throw new Error(`Expected not to have apiVersion ${apiVersion}, but found kinds: ${kinds}`);
+    }
+  }
 }
 
 module.exports = {

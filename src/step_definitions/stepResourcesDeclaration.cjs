@@ -1,6 +1,6 @@
 const { Given, DataTable } = require('@cucumber/cucumber');
 const { MyWorld } = require('../support/world.cjs');
-const { resourceDeclaration } = require('../suppor/stepResourceDeclaration.cjs');
+const { resourceDeclaration } = require('../support/stepResourceDeclaration.cjs');
 
 /*
 Given resource declaration:

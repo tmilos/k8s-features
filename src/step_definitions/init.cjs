@@ -24,10 +24,11 @@ After(
    * @returns {Promise}
    */
   async function () {
-  this.stopped = true;
-  if (!(('messy' in this.parameters) && this.parameters.messy)) {
-    await this.deleteCreatedResources();
+    this.stopped = true;
+    if (!(('messy' in this.parameters) && this.parameters.messy)) {
+      await this.deleteCreatedResources();
+    }
+    await this.stopWatches();
   }
-  await this.stopWatches();
-});
+);
 

@@ -1,10 +1,12 @@
 {
   "name": "k8s-features",
   "version": "1.0.5",
-  "main": "dist/index.cjs",
+  "main": "dist/lib.cjs",
   "scripts": {
+    "index": "node ./scripts/makeIndex.cjs src/step_definitions src/support",
+    "dist": "node ./scripts/build.cjs",
     "test": "jest",
-    "build": "node ./scripts/build.cjs",
+    "build": "npm run index && npm run dist",
     "cucumber": "cucumber-js ./src/features/**/*.feature -r ./src/step_definitions/**/*.cjs -r ./src/support/**/*.cjs --exit"
   },
   "author": "",

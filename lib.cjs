@@ -1,3 +1,3 @@
 module.exports = {
-  ...require('./src/support/index.cjs'),
+  ...require('./dist/src/support/index.cjs'),
 };

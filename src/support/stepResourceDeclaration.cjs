@@ -13,15 +13,22 @@ async function resourceDeclaration(world, table) {
    */
   let resources = [];
   for (let row of table.hashes()) {
-    resources.push({
+    const res = {
       alias: row.Alias,
       kind: row.Kind,
       apiVersion: row.ApiVersion,
       name: world.template(row.Name),
       namespace: world.template(row.Namespace),
-    });
+    };
+    resources.push(res);
+    // must add one by one, so the previously added rows are available for expression
+    // evaluation of the next ones
+    await world.addWatchedResources(res);
   }
-  await world.addWatchedResources(...resources);
+  console.log('Added resources:')
+  for (let res of resources) {
+    console.log(`  ${res.alias}  ${res.kind}  ${res.apiVersion}  ${res.name}  ${res.namespace}`);
+  }
 }
 
 module.exports = {

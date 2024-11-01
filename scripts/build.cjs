@@ -4,6 +4,9 @@ const { globSync } = require('glob');
 rmSync('./dist', { recursive: true, force: true});
 mkdirSync('./dist/src', {recursive: true});
 
+cpSync('./LICENSE', './dist/LICENSE');
+cpSync('./README.md', './dist/README.md');
+
 cpSync('./steps.cjs', './dist/steps.cjs');
 cpSync('./steps.mjs', './dist/steps.mjs');
 cpSync('./lib.cjs', './dist/lib.cjs');
