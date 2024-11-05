@@ -4,3 +4,7 @@
 /scripts
 cucumber-report.html
 jest.config.js
+/dist/lib.cjs
+/dist/lib.mjs
+/dist/steps.cjs
+/dist/steps.mjs
