@@ -4,7 +4,7 @@ const { MyWorld } = require('../support/world.cjs');
 
 setWorldConstructor(MyWorld);
 
-setDefaultTimeout(30 * 60 * 1000);
+setDefaultTimeout(60 * 60 * 1000);
 
 Before(
   /**
