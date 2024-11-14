@@ -6,7 +6,7 @@
 async function resourceDeclaration(world, table) {
   const raw = table.raw();
   if (!Array.isArray(raw) || raw.length < 2) {
-    throw new Error('Resources must be declated with a table having headers: Alias, Plural, ApiVersion, Name, Namespace');
+    throw new Error('Resources must be declared with a table having headers: Alias, Kind, ApiVersion, Name, Namespace');
   }
   /**
    * @type {import('../support/world.cjs').IResourceDeclaration[]}
@@ -17,8 +17,8 @@ async function resourceDeclaration(world, table) {
       alias: row.Alias,
       kind: row.Kind,
       apiVersion: row.ApiVersion,
-      name: world.template(row.Name),
-      namespace: world.template(row.Namespace),
+      name: row.Name,
+      namespace: row.Namespace,
     };
     resources.push(res);
     // must add one by one, so the previously added rows are available for expression

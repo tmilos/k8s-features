@@ -125,7 +125,7 @@ class MyWorld extends World {
       throw new Error('It seems init() method was not called in Before hook');
     }
     for (let item of resources) {
-      await this.watchedResources.add(item.alias, item.kind, item.apiVersion, item.name, item.namespace);
+      this.watchedResources.add(item.alias, item.kind, item.apiVersion, item.name, item.namespace);
     }
     await this.watchedResources.startWatches();
   }
@@ -186,9 +186,21 @@ class MyWorld extends World {
    * @returns {string}
    */
   template(template) {
+    try {
+      return this.templateWithThrow(template);
+    } catch {
+      return template;
+    }
+  }
+
+  /**
+   * @param {string} template 
+   * @returns {string}
+   */
+  templateWithThrow(template) {
     // if starts and ends with backtick ` evaluate it as js template literal
     if (template.startsWith("`") && template.endsWith("`")) {
-      return this.eval(template);
+      return this.evalWithThrow(template);
     }
     return template;
   }
@@ -198,12 +210,20 @@ class MyWorld extends World {
    * @returns {any}
    */
   eval(expression) {
-    const ctx = this.evalContext();
     try {
-      return safeEval(expression, ctx);
+      return this.evalWithThrow(expression);
     } catch (e) {
       return undefined;
     }
+  }
+
+  /**
+   * @param {string} expression 
+   * @returns {any}
+   */
+  evalWithThrow(expression) {
+    const ctx = this.evalContext();
+    return safeEval(expression, ctx);
   }
 
   /**
@@ -395,7 +415,7 @@ class MyWorld extends World {
   async applyWatchedManifest(alias, manifest, deleteOnFinish = false) {
     const item = this.getItem(alias);
     if (!item) {
-      throw new Error(`The resource ${alias} is not declated`);
+      throw new Error(`The resource ${alias} is not declared`);
     }
 
     await this.applyYamlManifest(manifest, item, deleteOnFinish);
@@ -557,7 +577,7 @@ ${scriptLines.map(l => '      '+l).join("\n")}
 
     const item = this.getItem(alias);
     if (!item) {
-      throw new Error(`Resource ${alias} is not declated`);
+      throw new Error(`Resource ${alias} is not declared`);
     }
     if (item.kind !== 'PersistentVolumeClaim') {
       throw new Error(`Resource ${alias} must be PersistentVolumeClaim, but it is ${item.kind}`);
@@ -587,7 +607,7 @@ ${scriptLines.map(l => '      '+l).join("\n")}
     }
     scriptLines.push(`echo "${allDone}"`);
 
-    await this.watchedResources.add(name, 'Pod', 'v1', name, namespace);
+    this.watchedResources.add(name, 'Pod', 'v1', name, namespace);
     await this.watchedResources.startWatches();
 
     const {podObj, cmObj} = await this.createPod(name, namespace, scriptLines, 'ubuntu', new PodMountPvcPatcher(pvcObj.metadata.name));

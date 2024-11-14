@@ -1,7 +1,8 @@
 const assert = require('node:assert');
-const { ListWatch, Watch, KubernetesObject, ObjectCache, DiscoveryApi, DiscoveryV1Api, V1APIResource, ApisApi, KubeConfig } = require('@kubernetes/client-node');
+const { ListWatch, Watch, KubernetesObject, V1APIResource, KubeConfig } = require('@kubernetes/client-node');
 const { getListFn } = require('../k8s/list.cjs');
 const { KindToResourceMapper } = require('../k8s/kindToResourceMapper.cjs');
+const { sleep } = require('../util/sleep.cjs');
 
 class ResourceDeclaration {
 
@@ -11,11 +12,10 @@ class ResourceDeclaration {
    * @param {string} alias 
    * @param {string} kind 
    * @param {string} apiVersion 
-   * @param {V1APIResource} resource 
    * @param {string} name 
    * @param {string | undefined} namespace 
    */
-  constructor(alias, kind, apiVersion, resource, name, namespace = undefined) {
+  constructor(alias, kind, apiVersion, name, namespace = undefined) {
     /**
      * @type {string}
      */
@@ -32,9 +32,9 @@ class ResourceDeclaration {
     this.apiVersion = apiVersion;
     
     /**
-     * @type {V1APIResource}
+     * @type {V1APIResource | undefined}
      */
-    this.resource = resource;
+    this.resource = undefined;
     
     /**
      * @type {string}
@@ -47,17 +47,13 @@ class ResourceDeclaration {
     this.namespace = namespace;
 
     /**
-     * @type {string}
-     * @readonly
+     * @type {KubernetesObject | undefined}
      */
-    this.plural = resource.name;
-
-    /**
-     * @type {ObjectCache<KubernetesObject> | undefined}
-     */
-    this.cache = undefined;
+    this.obj = undefined;
 
     this.deleteOnFinish = false;
+
+    this.evaluated = false;
   }
 
   /**
@@ -65,24 +61,17 @@ class ResourceDeclaration {
    * @returns {KubernetesObject | undefined}
    */
   getObj() {
-    if (this.cache) {
-      return this.cache.get(this.name, this.namespace);
-    }
+    return this.obj;
   }
 
   /**
-   * 
    * @returns {string}
    */
-  k8sWatchPath() {
-    let api = this.apiVersion.includes('/') ? 'apis' : 'api';
-    let path = `/${api}/${this.apiVersion}`;
-    if (this.namespace) {
-      path += `/namespaces/${this.namespace}`;
-    }
-    path += `/${this.plural}`;
-    return path;
+  key() {
+    const result = `${this.apiVersion}/${this.kind}/${this.namespace}/${this.name}`;
+    return result;
   }
+
 }
 
 class WatchedResources {
@@ -91,6 +80,8 @@ class WatchedResources {
    * @param {KubeConfig} kc
    */
   constructor(world, kc) {
+    this.started = false;
+
     /**
      * @type {import('./world.cjs').MyWorld}
      * @private
@@ -106,19 +97,17 @@ class WatchedResources {
     this.resourceMapper = new KindToResourceMapper(kc);
 
     /**
-     * @type {Map<string, ObjectCache<KubernetesObject>>}
-     * @private
-     * @readonly
-     */
-    this.caches = new Map();
-
-    /**
      * Map of alias => ResourceDeclaration
      * @type {Map<string, ResourceDeclaration>}
      * @readonly
      * @private
      */
     this.items = new Map();
+
+    /**
+     * @private
+     */
+    this._watchCount = 0;
   }
 
   /**
@@ -145,9 +134,9 @@ class WatchedResources {
    * @param {string} apiVersion 
    * @param {string} name 
    * @param {string} namespace 
-   * @returns {Promise}
+   * @returns {void}
    */
-  async add(alias, kind, apiVersion, name, namespace) {
+  add(alias, kind, apiVersion, name, namespace) {
     const rx = /.+/;
     if (this.items.has(alias)) {
       assert.fail(`Resource ${alias} already declared`);
@@ -157,17 +146,7 @@ class WatchedResources {
     assert.match(apiVersion, rx, "ApiVersion must not be an empty string");
     assert.match(name, rx, "Name must not be an empty string");
 
-    const resource = await this.resourceMapper.getResourceFromKind(apiVersion, kind);
-    if (!resource) {
-      throw new Error(`Unable to find resource ${kind} in ${apiVersion}`);
-    }
-
-    if (resource.namespaced && !namespace) {
-      namespace = this.world.parameters.namespace;
-    }
-
-    this.items.set(alias, new ResourceDeclaration(alias, kind, apiVersion, 
-      resource, name, namespace));
+    this.items.set(alias, new ResourceDeclaration(alias, kind, apiVersion, name, namespace));
   }
 
   /**
@@ -209,59 +188,131 @@ class WatchedResources {
       _: {},
     };
     for (/** @type [string, ResourceDeclaration] */ let [alias, item] of this.items) {
-      if (item.cache) {
-        const obj = item.cache.get(item.name, item.namespace);
-        ctx[alias] = obj;
-        ctx._[alias] = {
-          apiVersion: item.apiVersion,
-          kind: item.kind,
-          name: item.name,
-          namespace: item.namespace,
-          resource: item.resource,
-          obj,
-        };
-      }
+      const obj = item.getObj();
+      ctx[alias] = obj;
+      ctx._[alias] = {
+        apiVersion: item.apiVersion,
+        kind: item.kind,
+        name: item.name,
+        namespace: item.namespace,
+        resource: item.resource,
+        obj,
+      };
     }
     return ctx
   }
 
   /**
-   * @returns {Promise<void>}
+   * @private
    */
-  async startWatches() {
-    // many ResourceDeclaration we're startining to watch now can refer to the same kind
-    // thus we will create only one watch per kind
-    // and have to keep list of already created watches and not create duplicates
-    /**
-     * @type {ListWatch<KubernetesObject>[]}
-     */
-    let createdCaches = [];
-    for (let item of this.items.values()) {
-      if (item.cache) {
-        continue;
-      }
-      const path = item.k8sWatchPath();
-      if (this.caches.has(path)) {
-        item.cache = this.caches.get(path);
-        continue;
-      }
+  async _watchInterval() {
+    const exit = (function() {
+      this._watchCount++;
+    }).bind(this);
 
-      const kc = await this.world.getKubeConfig();
-      const cache = new ListWatch(path, new Watch(kc), getListFn(kc, path), false);
-      this.caches.set(path, cache);
-      createdCaches.push(cache);
-      item.cache = cache;
+    if (!this.started) {
+      return exit();
     }
 
-    return Promise.all(createdCaches.map(c => c.start()));
+    for (let item of this.items.values()) {
+      if (!this.started) {
+        return exit();
+      }
+
+      if (!item.resource) {
+        try {
+          item.resource = await this.resourceMapper.getResourceFromKind(item.apiVersion, item.kind);
+        } catch (err) {
+          item.obj = undefined;
+          continue;
+        }
+      }
+
+      if (!item.evaluated) {
+        try {
+          item.name = this.world.templateWithThrow(item.name);
+          if (item.resource.namespaced) {
+            if (item.namespace) {
+              item.namespace = this.world.templateWithThrow(item.namespace);
+            } else {
+              item.namespace = this.world.parameters.namespace ?? 'default';
+            }
+          } else {
+            item.namespace = '';
+          }
+          item.evaluated = true;
+        } catch {
+          item.obj = undefined;
+          continue;
+        }
+      }
+
+      const spec = {
+        apiVersion: item.apiVersion,
+        kind: item.kind,
+        metadata: {
+          name: item.name,
+        }
+      };
+      if (!spec.apiVersion || !spec.kind || !spec.metadata.name) {
+        item.obj = undefined;
+        continue;
+      }
+      if (item.resource.namespaced) {
+        spec.metadata.namespace = item.namespace;
+      }
+
+      try {
+        const resp = await this.world.api.read(spec);
+        if (resp.body) {
+          item.obj = resp.body;
+        } else {
+          item.obj = undefined;
+        }
+      } catch (err) {
+        item.obj = undefined;
+        continue;
+      }
+    }
+
+    if (!this.started) {
+      return exit();
+    }
+
+    const repeat = function() {
+      this._watchInterval();
+    }
+
+    setTimeout(repeat.bind(this), 1000);
+
+    exit();
   }
 
   /**
+   * Blocks until watch loop has run at least once, so that all declareed items
+   * have fresh values.
+   * @returns {Promise<void>}
+   */
+  async startWatches() {
+    const seenCount = this._watchCount;
+    if (!this.started) {
+      this.started = true;
+      this._watchInterval();
+    }
+    while (seenCount == this._watchCount) {
+      await sleep(100);
+    }
+  }
+
+  /**
+   * Blocks until watch loop is stopped so watched items will not change anymore
    * @returns {Promise<void>}
    */
   async stopWatches() {
-    for (let cache of this.caches.values()) {
-      await cache.stop();
+    const seenCount = this._watchCount;
+    this.started = false;
+    while (seenCount == this._watchCount) {
+      await sleep(100);
     }
   }
 
