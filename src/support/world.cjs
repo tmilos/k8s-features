@@ -102,6 +102,18 @@ class MyWorld extends World {
   async init() {
     this.kc = new KubeConfig();
     this.kc.loadFromDefault();
+    if (this.kc.getContexts().length == 0) {
+      const user = this.kc.getUsers()[0];
+      const cluster = this.kc.getClusters()[0];
+      if (!this.kc.getCurrentContext()) {
+        this.kc.setCurrentContext(cluster.name);
+      }
+      this.kc.addContext({
+        user: user.name,
+        cluster: cluster.name,
+        name: this.kc.getCurrentContext(),
+      });
+    }
     this.api = KubernetesObjectApi.makeApiClient(this.kc);
     this.watchedResources = new WatchedResources(this, this.kc);
   }

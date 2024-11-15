@@ -27,7 +27,8 @@ async function resourceDeclaration(world, table) {
   }
   console.log('Added resources:')
   for (let res of resources) {
-    console.log(`  ${res.alias}  ${res.kind}  ${res.apiVersion}  ${res.name}  ${res.namespace}`);
+    const item = world.getItem(res.alias);
+    console.log(`  ${item.alias}  ${item.kind}  ${item.apiVersion}  ${item.name}  ${item.namespace}`);
   }
 }
 

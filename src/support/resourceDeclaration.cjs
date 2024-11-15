@@ -299,8 +299,8 @@ class WatchedResources {
       this.started = true;
       this._watchInterval();
     }
-    while (seenCount == this._watchCount) {
-      await sleep(100);
+    while (seenCount +1 >= this._watchCount) {
+      await sleep(300);
     }
   }
 
@@ -309,10 +309,15 @@ class WatchedResources {
    * @returns {Promise<void>}
    */
   async stopWatches() {
+    if (!this.started) {
+      await sleep(1000);
+      return;
+    }
+
     const seenCount = this._watchCount;
     this.started = false;
     while (seenCount == this._watchCount) {
-      await sleep(100);
+      await sleep(300);
     }
   }
 
