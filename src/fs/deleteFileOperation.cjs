@@ -3,8 +3,8 @@ const { AbstractFileOperation } = require('./fileOperation.cjs');
 class DeleteFileOperation extends AbstractFileOperation {
 
   /**
-   * 
-   * @param {string} rootDir 
+   *
+   * @param {string} rootDir
    * @returns {string[]}
    */
   bash(rootDir) {

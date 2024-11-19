@@ -10,7 +10,7 @@ const { ExpiringMap } = require('../util/expiringMap.cjs');
 class KindToResourceMapper {
 
   /**
-   * @param {KubeConfig} kc 
+   * @param {KubeConfig} kc
    */
   constructor(kc, clock) {
     /**
@@ -35,7 +35,7 @@ class KindToResourceMapper {
   }
 
   /**
-   * @param {string} apiVersion 
+   * @param {string} apiVersion
    * @returns {Promise<V1APIResource[]>}
    */
   async getAllResourcesFromApiVersion(apiVersion) {
@@ -49,9 +49,9 @@ class KindToResourceMapper {
   }
 
   /**
-   * 
-   * @param {string} apiVersion 
-   * @param {string} kind 
+   *
+   * @param {string} apiVersion
+   * @param {string} kind
    * @returns {Promise<V1APIResource | undefined>}
    */
   async getResourceFromKind(apiVersion, kind) {
@@ -73,7 +73,7 @@ class KindToResourceMapper {
   }
 
   /**
-   * @param {string} apiVersion 
+   * @param {string} apiVersion
    * @returns {Promise<void>}
    * @protected
    */
@@ -91,9 +91,9 @@ class KindToResourceMapper {
   }
 
   /**
-   * 
-   * @param {string} basePath 
-   * @param {string} apiVersion 
+   *
+   * @param {string} basePath
+   * @param {string} apiVersion
    * @returns {string}
    * @protected
    */

@@ -4,10 +4,10 @@ const { AbstractKubernetesObjectPatcher } = require('./types.cjs');
 class PodEnvFromConfigMapPatcher extends AbstractKubernetesObjectPatcher {
 
   /**
-   * 
+   *
    * @param {string} name
-   * @param {string} configMapName 
-   * @param {string} key 
+   * @param {string} configMapName
+   * @param {string} key
    */
   constructor(name, configMapName, key) {
     super();
@@ -17,8 +17,8 @@ class PodEnvFromConfigMapPatcher extends AbstractKubernetesObjectPatcher {
   }
 
   /**
-   * 
-   * @param {KubernetesObject} obj 
+   *
+   * @param {KubernetesObject} obj
    */
   patch(obj) {
     if (obj.kind !== 'Pod') {

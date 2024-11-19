@@ -18,10 +18,10 @@ class RedisCmdGivenParams {
 }
 
 /**
- * @param {string} rowName 
- * @param {string[]} row 
- * @param {number} index 
- * @param {string} colName 
+ * @param {string} rowName
+ * @param {string[]} row
+ * @param {number} index
+ * @param {string} colName
  */
 function mustHaveColumn(rowName, row, index, colName) {
   if (row.length < index - 1) {
@@ -34,9 +34,9 @@ function mustHaveColumn(rowName, row, index, colName) {
 }
 
 /**
- * @param {MyWorld} world 
- * @param {string} envVarName 
- * @param {string[]} row 
+ * @param {MyWorld} world
+ * @param {string} envVarName
+ * @param {string[]} row
  * @returns {AbstractKubernetesObjectPatcher}
  */
 function envPatcherForParam(world, envVarName, row) {
@@ -62,10 +62,10 @@ function envPatcherForParam(world, envVarName, row) {
  */
 
 /**
- * @param {MyWorld} world 
- * @param {string} rowName 
- * @param {string[]} row 
- * @param {string} volumeName 
+ * @param {MyWorld} world
+ * @param {string} rowName
+ * @param {string[]} row
+ * @param {string} volumeName
  * @returns {VolumePatcherForParamResult}
  */
 function volumePatcherForParam(world, rowName, row, volumeName) {
@@ -91,10 +91,10 @@ function volumePatcherForParam(world, rowName, row, volumeName) {
 }
 
 /**
- * @param {MyWorld} world 
- * @param {string} cmd 
- * @param {string} expectedOutput 
- * @param {DataTable} dataTable 
+ * @param {MyWorld} world
+ * @param {string} cmd
+ * @param {string} expectedOutput
+ * @param {DataTable} dataTable
  * @returns {Promise}
  */
 async function redisCmd(world, cmd, expectedOutput, dataTable) {
@@ -181,7 +181,7 @@ async function redisCmd(world, cmd, expectedOutput, dataTable) {
   const { podObj, cmObj } = await world.createPod(name, namespace, scriptLines, `redis:${setValues.version}`, ...patchers);
 
   await world.eventuallyValueIsOk(
-    `${name}.status.phase == "Succeeded"`, 
+    `${name}.status.phase == "Succeeded"`,
     `${name}.status.phase == "Failed"`
   );
 

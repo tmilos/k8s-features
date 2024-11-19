@@ -64,7 +64,7 @@ class MyWorld extends World {
 
   _assertArrayOfStrings(val, mustHaveLen = true) {
     ok(val);
-    ok(Array.isArray(val)); 
+    ok(Array.isArray(val));
     if (mustHaveLen) {
       ok(val.length);
     }
@@ -78,7 +78,7 @@ class MyWorld extends World {
 
   _assertArrayOfObjects(val, mustHaveLen = true) {
     ok(val);
-    ok(Array.isArray(val)); 
+    ok(Array.isArray(val));
     if (mustHaveLen) {
       ok(val.length);
     }
@@ -86,7 +86,7 @@ class MyWorld extends World {
   }
 
   /**
-   * @param {Clock} clock 
+   * @param {Clock} clock
    */
   setClock(clock) {
     this._clock = clock;
@@ -119,7 +119,7 @@ class MyWorld extends World {
   }
 
   /**
-   * 
+   *
    * @returns {Promise<KubeConfig>}
    */
   async getKubeConfig() {
@@ -127,7 +127,7 @@ class MyWorld extends World {
   }
 
   /**
-   * @param  {...IResourceDeclaration} resources 
+   * @param  {...IResourceDeclaration} resources
    * @returns {Promise}
    */
   async addWatchedResources(...resources) {
@@ -172,7 +172,7 @@ class MyWorld extends World {
   }
 
   /**
-   * @param {string} alias 
+   * @param {string} alias
    * @returns {ResourceDeclaration | undefined}
    */
   getItem(alias) {
@@ -183,7 +183,7 @@ class MyWorld extends World {
   }
 
   /**
-   * @param {string} alias 
+   * @param {string} alias
    * @returns {KubernetesObject | undefined}
    */
   getObj(alias) {
@@ -194,7 +194,7 @@ class MyWorld extends World {
   }
 
   /**
-   * @param {string} template 
+   * @param {string} template
    * @returns {string}
    */
   template(template) {
@@ -206,7 +206,7 @@ class MyWorld extends World {
   }
 
   /**
-   * @param {string} template 
+   * @param {string} template
    * @returns {string}
    */
   templateWithThrow(template) {
@@ -218,7 +218,7 @@ class MyWorld extends World {
   }
 
   /**
-   * @param {string} expression 
+   * @param {string} expression
    * @returns {any}
    */
   eval(expression) {
@@ -230,7 +230,7 @@ class MyWorld extends World {
   }
 
   /**
-   * @param {string} expression 
+   * @param {string} expression
    * @returns {any}
    */
   evalWithThrow(expression) {
@@ -239,7 +239,7 @@ class MyWorld extends World {
   }
 
   /**
-   * @param {string} apiVersion 
+   * @param {string} apiVersion
    * @returns {Promise<V1APIResource[]>}
    */
   async getAllResourcesFromApiVersion(apiVersion) {
@@ -250,7 +250,7 @@ class MyWorld extends World {
   }
 
   /**
-   * @param {string} actualExp 
+   * @param {string} actualExp
    */
   valueIsOk(actualExp) {
     const actual = this.eval(actualExp);
@@ -258,8 +258,8 @@ class MyWorld extends World {
   }
 
   /**
-   * @param {string} actualExp 
-   * @param  {...string} unlessExpressions 
+   * @param {string} actualExp
+   * @param  {...string} unlessExpressions
    * @returns {Promise}
    */
   async eventuallyValueIsOk(actualExp, ...unlessExpressions) {
@@ -315,9 +315,9 @@ class MyWorld extends World {
   }
 
   /**
-   * 
-   * @param {KubernetesObject} obj 
-   * @param {ResourceDeclaration | undefined} item 
+   *
+   * @param {KubernetesObject} obj
+   * @param {ResourceDeclaration | undefined} item
    * @returns {Promise}
    */
   async update(obj, item) {
@@ -354,9 +354,9 @@ class MyWorld extends World {
   }
 
   /**
-   * 
-   * @param {KubernetesObject} obj 
-   * @param {ResourceDeclaration | undefined} item 
+   *
+   * @param {KubernetesObject} obj
+   * @param {ResourceDeclaration | undefined} item
    * @param {boolean} deleteOnFinish
    * @returns {Promise}
    */
@@ -402,9 +402,9 @@ class MyWorld extends World {
   }
 
   /**
-   * 
-   * @param {string} manifest 
-   * @param {ResourceDeclaration | undefined} item 
+   *
+   * @param {string} manifest
+   * @param {ResourceDeclaration | undefined} item
    * @param {boolean | undefined} deleteOnFinish
    * @returns {Promise}
    */
@@ -418,9 +418,9 @@ class MyWorld extends World {
   }
 
   /**
-   * 
-   * @param {string} alias 
-   * @param {string} manifest 
+   *
+   * @param {string} alias
+   * @param {string} manifest
    * @param {boolean|undefined} deleteOnFinish
    * @returns {Promise}
    */
@@ -434,8 +434,8 @@ class MyWorld extends World {
   }
 
   /**
-   * 
-   * @param {KubernetesObject} obj 
+   *
+   * @param {KubernetesObject} obj
    * @returns {Promise}
    */
   async delete(obj) {
@@ -448,12 +448,12 @@ class MyWorld extends World {
   }
 
   /**
-   * @param {string} alias 
+   * @param {string} alias
    * @returns {Promise}
    */
   async eventuallyResourceDoesNotExist(alias) {
     const startTime = this.getClock().getTime();
-    
+
     while (!this.stopped) {
       const item = this.getItem(alias);
       if (!item) {
@@ -474,8 +474,8 @@ class MyWorld extends World {
   }
 
   /**
-   * 
-   * @param {string} alias 
+   *
+   * @param {string} alias
    */
   resourceDoesNotExist(alias) {
     const item = this.getItem(alias);
@@ -489,11 +489,11 @@ class MyWorld extends World {
   }
 
   /**
-   * 
-   * @param {string} podName 
-   * @param {string} namespace 
-   * @param {string} containerName 
-   * @param {number} tailLines 
+   *
+   * @param {string} podName
+   * @param {string} namespace
+   * @param {string} containerName
+   * @param {number} tailLines
    * @returns {Promise<string>}
    */
   async getLogs(podName, namespace, containerName, tailLines = 100) {
@@ -501,17 +501,17 @@ class MyWorld extends World {
   }
 
   /**
-   * 
-   * @param {string} name 
-   * @param {string} namespace 
-   * @param {string[]} scriptLines 
-   * @param {string} image 
-   * @param  {...AbstractKubernetesObjectPatcher} patches 
+   *
+   * @param {string} name
+   * @param {string} namespace
+   * @param {string[]} scriptLines
+   * @param {string} image
+   * @param  {...AbstractKubernetesObjectPatcher} patches
    * @returns {Promise<{podObj: KubernetesObject, cmObj: KubernetesObject}>}
    */
   async createPod(name, namespace, scriptLines, image = 'ubuntu', ...patches) {
     this._assertArrayOfObjects(patches, false);
-    
+
     if (!name) {
       throw new Error('Pod to create must have name');
     }
@@ -539,9 +539,14 @@ ${scriptLines.map(l => '      '+l).join("\n")}
     /**
      * @type {KubernetesObject}
      */
-    const cmObj = yamlParse(cmManifest);
+    let cmObj;
+    try {
+      cmObj = yamlParse(cmManifest);
+    } catch (err) {
+      throw new Error(`Error parsing ConfigMap manifest for createPod: ${err}\n${cmManifest}`, {cause: err});
+    }
     await this.applyObject(cmObj);
-  
+
     const podManifest = `
   apiVersion: v1
   kind: Pod
@@ -562,22 +567,31 @@ ${scriptLines.map(l => '      '+l).join("\n")}
     /**
      * @type {KubernetesObject}
      */
-    const podObj = yamlParse(podManifest);
+    let podObj;
+    try {
+      podObj = yamlParse(podManifest);
+    } catch (err) {
+      throw new Error(`Error parsing Pod manifest for createPod: ${err}\n${podManifest}`, {cause: err});
+    }
 
     patches.push(new PodMountConfigMapPatcher(name, name, '/script', 0o744));
     for (let patch of patches) {
       patch.patch(podObj);
     }
-  
+
+    try {
     await this.applyObject(podObj);
+    } catch (err) {
+      throw new Error(`Error creating pod: ${err}\n${podManifest}\n---\n${cmManifest}\n`, {cause: err});
+    }
 
     return {podObj, cmObj};
   }
 
   /**
-   * 
-   * @param {string} alias 
-   * @param  {...AbstractFileOperation} fileOperations 
+   *
+   * @param {string} alias
+   * @param  {...AbstractFileOperation} fileOperations
    * @returns {Promise}
    */
   async pvcFileOperations(alias, ...fileOperations) {
@@ -624,17 +638,23 @@ ${scriptLines.map(l => '      '+l).join("\n")}
 
     const {podObj, cmObj} = await this.createPod(name, namespace, scriptLines, 'ubuntu', new PodMountPvcPatcher(pvcObj.metadata.name));
 
-    await this.eventuallyValueIsOk(
-      `${name}.status.phase == "Succeeded"`, 
-      `${name}.status.phase == "Failed"`
-    );
+    let failed = false;
+
+    try {
+      await this.eventuallyValueIsOk(
+        `${name}.status.phase == "Succeeded"`,
+        `${name}.status.phase == "Failed"`
+      );
+    } catch {
+      failed = true;
+    }
 
     const logs = await this.getLogs(name, namespace, name);
 
     await this.delete(podObj);
     await this.delete(cmObj);
 
-    if (logs.indexOf(allDone) !== -1) {
+    if (failed || logs.indexOf(allDone) !== -1) {
       return;
     }
 
@@ -692,8 +712,8 @@ ${scriptLines.map(l => '      '+l).join("\n")}
   }
 
   /**
-   * @param {string} kind 
-   * @param {string} apiVersion 
+   * @param {string} kind
+   * @param {string} apiVersion
    * @returns {Promise}
    */
   async kindExists(kind, apiVersion) {
@@ -708,8 +728,8 @@ ${scriptLines.map(l => '      '+l).join("\n")}
   }
 
   /**
-   * @param {string} kind 
-   * @param {string} apiVersion 
+   * @param {string} kind
+   * @param {string} apiVersion
    * @returns {Promise}
    */
   async kindDoesNotExist(kind, apiVersion) {
@@ -722,8 +742,8 @@ ${scriptLines.map(l => '      '+l).join("\n")}
   }
 
   /**
-   * @param {string} kind 
-   * @param {string} apiVersion 
+   * @param {string} kind
+   * @param {string} apiVersion
    * @returns {Promise}
    */
   async eventuallyKindExists(kind, apiVersion) {
@@ -755,8 +775,8 @@ ${scriptLines.map(l => '      '+l).join("\n")}
   }
 
   /**
-   * @param {string} kind 
-   * @param {string} apiVersion 
+   * @param {string} kind
+   * @param {string} apiVersion
    * @returns {Promise}
    */
   async eventuallyKindDoesNotExist(kind, apiVersion) {
@@ -770,7 +790,7 @@ ${scriptLines.map(l => '      '+l).join("\n")}
         if (err.message.includes('status code 404')) {
           return; //apiVersion does not exist
         }
-        // not sure what this is, just log it 
+        // not sure what this is, just log it
         console.log(err);
         continue;
       }

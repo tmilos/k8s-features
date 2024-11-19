@@ -2,9 +2,9 @@ const { AbstractFileOperation } = require("./fileOperation.cjs");
 
 class AppendFileOperation extends AbstractFileOperation {
   /**
-   * 
-   * @param {string} path 
-   * @param {string} content 
+   *
+   * @param {string} path
+   * @param {string} content
    */
   constructor(path, content) {
     super(path);
@@ -12,8 +12,8 @@ class AppendFileOperation extends AbstractFileOperation {
   }
 
   /**
-   * 
-   * @param {string} rootDir 
+   *
+   * @param {string} rootDir
    * @returns {string[]}
    */
   bash(rootDir) {

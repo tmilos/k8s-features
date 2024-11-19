@@ -8,18 +8,18 @@ const { IncomingMessage } = require('node:http');
  */
 
 /**
- * 
- * @param {string | URL} url 
- * @param {RequestOptions} options 
+ *
+ * @param {string | URL} url
+ * @param {RequestOptions} options
  * @returns {Promise<GetAsyncResult>}
  */
 function getAsync(url, options) {
   return new Promise((resolve, reject) => {
-    get(url, options, 
+    get(url, options,
       /**
-       * @param {IncomingMessage} res 
+       * @param {IncomingMessage} res
        */
-      (res) => {  
+      (res) => {
         res.setEncoding('utf8');
         let rawData = '';
         res.on('data', (chunk) => { rawData += chunk; });
@@ -49,7 +49,7 @@ function getAsync(url, options) {
         });
       },
     );
-  
+
   });
 }
 

@@ -4,10 +4,10 @@ const { AbstractPodMountPatcher } = require('./abstractPodMountPatcher.cjs');
 class PodMountConfigMapPatcher extends AbstractPodMountPatcher {
 
   /**
-   * 
-   * @param {string} configMapName 
-   * @param {string|undefined} volumeName 
-   * @param {string|undefined} mountPath 
+   *
+   * @param {string} configMapName
+   * @param {string|undefined} volumeName
+   * @param {string|undefined} mountPath
    * @param {number|undefined} defaultMode defaults to 0o644
    */
   constructor(configMapName, volumeName, mountPath, defaultMode) {
@@ -17,8 +17,8 @@ class PodMountConfigMapPatcher extends AbstractPodMountPatcher {
   }
 
   /**
-   * 
-   * @param {KubernetesObject} obj 
+   *
+   * @param {KubernetesObject} obj
    */
   patch(obj) {
     super.patch(obj);

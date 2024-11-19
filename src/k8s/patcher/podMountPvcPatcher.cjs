@@ -4,10 +4,10 @@ const { AbstractPodMountPatcher } = require('./abstractPodMountPatcher.cjs');
 class PodMountPvcPatcher extends AbstractPodMountPatcher {
 
   /**
-   * 
-   * @param {string} pvcName 
-   * @param {string|undefined} volumeName 
-   * @param {string|undefined} mountPath 
+   *
+   * @param {string} pvcName
+   * @param {string|undefined} volumeName
+   * @param {string|undefined} mountPath
    */
   constructor(pvcName, volumeName, mountPath) {
     super(volumeName ?? pvcName, mountPath);
@@ -15,8 +15,8 @@ class PodMountPvcPatcher extends AbstractPodMountPatcher {
   }
 
   /**
-   * 
-   * @param {KubernetesObject} obj 
+   *
+   * @param {KubernetesObject} obj
    */
   patch(obj) {
     super.patch(obj);

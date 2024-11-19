@@ -18,7 +18,7 @@ class ExpiringMap {
   }
 
   /**
-   * @param {string} key 
+   * @param {string} key
    * @returns {number}
    */
   _insertTime(key) {
@@ -26,7 +26,7 @@ class ExpiringMap {
   }
 
   /**
-   * @param {string} key 
+   * @param {string} key
    * @returns {boolean}
    */
   _isExpired(key) {
@@ -48,7 +48,7 @@ class ExpiringMap {
   }
 
   /**
-   * @param {Clock} clock 
+   * @param {Clock} clock
    */
   setClock(clock) {
     this._clock = clock;
@@ -71,7 +71,7 @@ class ExpiringMap {
   }
 
   /**
-   * @param {string} key 
+   * @param {string} key
    * @returns {boolean}
    */
   has(key) {
@@ -80,8 +80,8 @@ class ExpiringMap {
   }
 
   /**
-   * @param {string} key 
-   * @param {any} value 
+   * @param {string} key
+   * @param {any} value
    */
   set(key, value) {
     this._dataMap.set(key, value);
@@ -89,7 +89,7 @@ class ExpiringMap {
   }
 
   /**
-   * @param {string} key 
+   * @param {string} key
    * @returns {any}
    */
   get(key) {
@@ -106,7 +106,7 @@ class ExpiringMap {
   }
 
   /**
-   * @param {string} key 
+   * @param {string} key
    */
   delete(key) {
     this._dataMap.delete(key);

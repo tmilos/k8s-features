@@ -5,7 +5,7 @@ Then(
   'apiVersion {word} exists',
   /**
    * @this MyWorld
-   * @param {string} apiVersion 
+   * @param {string} apiVersion
    * @returns {Promise}
    */
   async function(apiVersion) {

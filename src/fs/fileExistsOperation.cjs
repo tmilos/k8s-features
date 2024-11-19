@@ -2,8 +2,8 @@ const { AbstractFileOperation } = require('./fileOperation.cjs');
 
 class FileExistsOperation extends AbstractFileOperation {
   /**
-   * 
-   * @param {string} rootDir 
+   *
+   * @param {string} rootDir
    * @returns {string[]}
    */
   bash(rootDir) {

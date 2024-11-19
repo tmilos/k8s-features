@@ -3,9 +3,9 @@ const { AbstractKubernetesObjectPatcher } = require('./types.cjs');
 
 class PodEnvFixedPatcher extends AbstractKubernetesObjectPatcher {
   /**
-   * 
-   * @param {string} name 
-   * @param {string} value 
+   *
+   * @param {string} name
+   * @param {string} value
    */
   constructor(name, value) {
     super();
@@ -14,8 +14,8 @@ class PodEnvFixedPatcher extends AbstractKubernetesObjectPatcher {
   }
 
   /**
-   * 
-   * @param {KubernetesObject} obj 
+   *
+   * @param {KubernetesObject} obj
    */
   patch(obj) {
     if (obj.kind !== 'Pod') {

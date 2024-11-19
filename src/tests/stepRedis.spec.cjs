@@ -46,8 +46,8 @@ describe('step Redis cmd', function() {
 
     worldStub.template.callsFake(
       /**
-       * 
-       * @param {string} template 
+       *
+       * @param {string} template
        * @returns {string}
        */
       function(template) {
@@ -62,12 +62,12 @@ describe('step Redis cmd', function() {
     );
     worldStub.createPod.callsFake(
       /**
-       * 
-       * @param {string} name 
-       * @param {string} namespace 
-       * @param {string[]} scriptLines 
-       * @param {string} image 
-       * @param {...AbstractKubernetesObjectPatcher} patches 
+       *
+       * @param {string} name
+       * @param {string} namespace
+       * @param {string[]} scriptLines
+       * @param {string} image
+       * @param {...AbstractKubernetesObjectPatcher} patches
        * @returns {Promise<{podObj: KubernetesObject, cmObj: KubernetesObject}>}
        */
       function(name, namespace, scriptLines, image = 'ubuntu', ...patches) {
@@ -120,7 +120,7 @@ describe('step Redis cmd', function() {
     ]);
 
     expect(patches).toHaveLength(3);
-    
+
     expect(patches[0]).toBeInstanceOf(PodEnvFromSecretPatcher);
     expect(patches[0].name).toBe('HOST');
     expect(patches[0].secretName).toBe(secretName);
@@ -136,5 +136,5 @@ describe('step Redis cmd', function() {
     expect(patches[2].secretName).toBe(secretName);
     expect(patches[2].key).toBe('authString');
   });
-  
+
 });

@@ -5,12 +5,12 @@ const charactersDigit = '0123456789';
 const charactersSpecial = '!@#$%^&*/';
 
 /**
- * 
- * @param {number|undefined} length 
- * @param {boolean} upper 
- * @param {boolean} lower 
- * @param {boolean} digit 
- * @param {boolean} special 
+ *
+ * @param {number|undefined} length
+ * @param {boolean} upper
+ * @param {boolean} lower
+ * @param {boolean} digit
+ * @param {boolean} special
  * @returns {string}
  */
 function makeid(length = undefined, upper = false, lower = true, digit = true, special = false) {

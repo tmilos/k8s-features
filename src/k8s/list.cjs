@@ -8,19 +8,19 @@ const { getAsync } = require('./http.cjs');
  */
 
 /**
- * 
- * @param {KubeConfig} kc 
- * @param {string} path 
+ *
+ * @param {KubeConfig} kc
+ * @param {string} path
  * @returns {Promise<ListResponseType>|ListPromise<KubernetesObject>}
  */
 function getListFn(kc, path) {
   return async () => {
     const opts = {};
     await kc.applyToHTTPSOptions(opts);
-  
+
     const list = await getAsync(`${kc.getCurrentCluster().server}${path}`, opts);
-  
-    return list;  
+
+    return list;
   }
 }
 

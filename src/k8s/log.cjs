@@ -14,12 +14,12 @@ const { sleep } = require('../util/sleep.cjs');
 
 
 /**
- * 
- * @param {KubeConfig} kc 
- * @param {string} podName 
- * @param {string} namespace 
- * @param {string} container 
- * @param {LogOptions|undefined} opts 
+ *
+ * @param {KubeConfig} kc
+ * @param {string} podName
+ * @param {string} namespace
+ * @param {string} container
+ * @param {LogOptions|undefined} opts
  * @returns {Promise<string>}
  */
 async function log(kc, podName, namespace, container, opts = undefined) {

@@ -2,9 +2,9 @@ const { AbstractFileOperation } = require('./fileOperation.cjs');
 
 class FileContainsOperation extends AbstractFileOperation {
   /**
-   * 
-   * @param {string} path 
-   * @param {string} content 
+   *
+   * @param {string} path
+   * @param {string} content
    */
   constructor(path, content) {
     super(path);
@@ -12,13 +12,26 @@ class FileContainsOperation extends AbstractFileOperation {
   }
 
   /**
-   * 
-   * @param {string} rootDir 
+   *
+   * @param {string} rootDir
    * @returns {string[]}
    */
   bash(rootDir) {
     return [
-      `grep "${this.content}" ${rootDir}/${this.path} > /dev/null || (echo "not found: ${this.content}"; exit 1)`,
+      ``,
+      `# FileContainsOperation`,
+      `FILE=${rootDir}/${this.path}`,
+      `DIR=${rootDir}`,
+      `CONTENT="${this.content}"`,
+      `if ! grep $CONTENT $FILE; then`,
+      `  echo "content '$CONTENT' not found"`,
+      `  echo "directory '$DIR' content:"`,
+      `  ls -la $DIR`,
+      `  echo "file content:"`,
+      `  cat $FILE`,
+      `  exit 1`,
+      `fi`,
+      ``,
     ];
   }
 }

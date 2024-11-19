@@ -10,7 +10,7 @@ Given resource declaration:
 */
 
 Given(
-  'resource declaration:', 
+  'resource declaration:',
   /**
    * @this MyWorld
    * @param {DataTable} table
@@ -29,7 +29,7 @@ Given resources are watched:
 */
 
 Given(
-  'resources are watched:', 
+  'resources are watched:',
   /**
    * @this MyWorld
    * @param {DataTable} table

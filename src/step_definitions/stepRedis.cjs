@@ -12,11 +12,11 @@ const { redisCmd } = require('../support/stepRedis.cjs');
       | Version | 7.4    |                       |            |
 */
 Then(
-  'Redis {string} gives {string} with:', 
+  'Redis {string} gives {string} with:',
   /**
    * @this MyWorld
-   * @param {string} cmd 
-   * @param {string} expectedOutput 
+   * @param {string} cmd
+   * @param {string} expectedOutput
    * @param {DataTable} dataTable
    * @returns {Promise}
    */

@@ -8,8 +8,8 @@ const assert = require('node:assert');
 class AbstractPodMountPatcher extends AbstractKubernetesObjectPatcher {
 
   /**
-   * @param {string} volumeName 
-   * @param {string} mountPath 
+   * @param {string} volumeName
+   * @param {string} mountPath
    */
   constructor(volumeName, mountPath) {
     super();
@@ -20,7 +20,7 @@ class AbstractPodMountPatcher extends AbstractKubernetesObjectPatcher {
 
   /**
    * @abstract
-   * @param {KubernetesObject} obj 
+   * @param {KubernetesObject} obj
    */
   patch(obj) {
     if (obj.kind !== 'Pod') {

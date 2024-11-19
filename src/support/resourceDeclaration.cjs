@@ -9,11 +9,11 @@ class ResourceDeclaration {
   deleteOnFinish = false;
 
   /**
-   * @param {string} alias 
-   * @param {string} kind 
-   * @param {string} apiVersion 
-   * @param {string} name 
-   * @param {string | undefined} namespace 
+   * @param {string} alias
+   * @param {string} kind
+   * @param {string} apiVersion
+   * @param {string} name
+   * @param {string | undefined} namespace
    */
   constructor(alias, kind, apiVersion, name, namespace = undefined) {
     /**
@@ -25,22 +25,22 @@ class ResourceDeclaration {
      * @type {string}
      */
     this.kind = kind;
-    
+
     /**
      * @type {string}
      */
     this.apiVersion = apiVersion;
-    
+
     /**
      * @type {V1APIResource | undefined}
      */
     this.resource = undefined;
-    
+
     /**
      * @type {string}
      */
     this.name = name;
-    
+
     /**
      * @type {string}
      */
@@ -57,7 +57,7 @@ class ResourceDeclaration {
   }
 
   /**
-   * 
+   *
    * @returns {KubernetesObject | undefined}
    */
   getObj() {
@@ -111,7 +111,7 @@ class WatchedResources {
   }
 
   /**
-   * 
+   *
    * @returns {ResourceDeclaration[]}
    */
   getCreatedItems() {
@@ -128,12 +128,12 @@ class WatchedResources {
   }
 
   /**
-   * 
-   * @param {string} alias 
-   * @param {string} kind 
-   * @param {string} apiVersion 
-   * @param {string} name 
-   * @param {string} namespace 
+   *
+   * @param {string} alias
+   * @param {string} kind
+   * @param {string} apiVersion
+   * @param {string} name
+   * @param {string} namespace
    * @returns {void}
    */
   add(alias, kind, apiVersion, name, namespace) {
@@ -150,8 +150,8 @@ class WatchedResources {
   }
 
   /**
-   * 
-   * @param {string} apiVersion 
+   *
+   * @param {string} apiVersion
    * @returns {Promise<V1APIResource[]>}
    */
   async getAllResourcesFromApiVersion(apiVersion) {
@@ -159,8 +159,8 @@ class WatchedResources {
   }
 
   /**
-   * 
-   * @param {string} alias 
+   *
+   * @param {string} alias
    * @returns {ResourceDeclaration | undefined}
    */
   getItem(alias) {
@@ -168,8 +168,8 @@ class WatchedResources {
   }
 
   /**
-   * 
-   * @param {string} alias 
+   *
+   * @param {string} alias
    * @returns {KubernetesObject | undefined}
    */
   getObj(alias) {
@@ -230,10 +230,18 @@ class WatchedResources {
 
       if (!item.evaluated) {
         try {
-          item.name = this.world.templateWithThrow(item.name);
+          const nameEvaluated = this.world.templateWithThrow('`'+item.name+'`');
+          if (!nameEvaluated) {
+            throw new Error('empty name');
+          }
+          item.name = nameEvaluated;
           if (item.resource.namespaced) {
             if (item.namespace) {
-              item.namespace = this.world.templateWithThrow(item.namespace);
+              const namespaceEvaluated = this.world.templateWithThrow('`'+item.namespace+'`');
+              if (!namespaceEvaluated) {
+                throw new Error('empty namespace');
+              }
+              item.namespace = namespaceEvaluated;
             } else {
               item.namespace = this.world.parameters.namespace ?? 'default';
             }
@@ -270,7 +278,7 @@ class WatchedResources {
           item.obj = undefined;
         }
       } catch (err) {
-        item.obj = undefined;
+        item.obj = undefined; // err.statusCode == 404
         continue;
       }
     }

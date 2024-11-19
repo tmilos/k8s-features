@@ -1,7 +1,7 @@
 
 /**
- * 
- * @param {number} ms 
+ *
+ * @param {number} ms
  * @returns {Promise}
  */
 function sleep(ms) {

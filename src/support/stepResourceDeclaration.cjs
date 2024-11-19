@@ -1,7 +1,7 @@
 
 /**
- * @param {import('./world.cjs').MyWorld} world 
- * @param {import('@cucumber/cucumber').DataTable} table 
+ * @param {import('./world.cjs').MyWorld} world
+ * @param {import('@cucumber/cucumber').DataTable} table
  */
 async function resourceDeclaration(world, table) {
   const raw = table.raw();

@@ -5,7 +5,7 @@ Then(
   'kinds in apiVersion {word} do not exist:',
   /**
    * @this MyWorld
-   * @param {string} apiVersion 
+   * @param {string} apiVersion
    * @param {DataTable} dataTable
    * @returns {Promise}
    */

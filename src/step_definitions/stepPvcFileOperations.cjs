@@ -18,18 +18,18 @@ const { FileExistsOperation } = require('../fs/fileExistsOperation.cjs');
       | Exists    | foo.txt |              |
 */
 Then(
-  'PVC {word} file operations succeed:', 
+  'PVC {word} file operations succeed:',
   /**
    * @this MyWorld
-   * @param {string} alias 
-   * @param {DataTable} table 
+   * @param {string} alias
+   * @param {DataTable} table
    * @returns {Promise}
    */
   async function(alias, table) {
     /**
-     * 
-     * @param {string} prop 
-     * @param {Object.<string, string>} row 
+     *
+     * @param {string} prop
+     * @param {Object.<string, string>} row
      */
     const mustHaveProp = (prop, row) => {
       if (!(prop in row) || !row[prop]) {

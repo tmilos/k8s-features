@@ -1,8 +1,8 @@
 
 class AbstractFileOperation {
   /**
-   * 
-   * @param {string} path 
+   *
+   * @param {string} path
    */
   constructor(path) {
     if (path.startsWith('/')) {
@@ -12,7 +12,7 @@ class AbstractFileOperation {
   }
 
   /**
-   * @param {string} rootDir 
+   * @param {string} rootDir
    * @returns {string[]}
    */
   bash(rootDir) {

@@ -1,8 +1,8 @@
 
 /**
- * 
- * @param {Object} obj 
- * @param {string|undefined} finalizer 
+ *
+ * @param {Object} obj
+ * @param {string|undefined} finalizer
  * @returns {boolean}
  */
 function hasFinalizer(obj, finalizer) {

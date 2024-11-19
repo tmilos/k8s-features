@@ -1,9 +1,9 @@
 const { KubernetesObject, V1Condition } = require('@kubernetes/client-node');
 
 /**
- * 
- * @param {Object|KubernetesObject} obj 
- * @param {string} type 
+ *
+ * @param {Object|KubernetesObject} obj
+ * @param {string} type
  * @returns {V1Condition | undefined}
  */
 function findCondition(obj, type) {
@@ -19,9 +19,9 @@ function findCondition(obj, type) {
 }
 
 /**
- * 
- * @param {Object|KubernetesObject} obj 
- * @param {string} type 
+ *
+ * @param {Object|KubernetesObject} obj
+ * @param {string} type
  * @returns {V1Condition | undefined}
  */
 function findConditionTrue(obj, type) {
