@@ -4,6 +4,7 @@ const { HttpError, KubeConfig, KubernetesObject, KubernetesObjectApi, PatchUtils
 const safeEval = require('safe-eval');
 const { ok } = require('assert');
 const { sleep } = require('../util/sleep.cjs');
+const { retry } = require('../util/retry.cjs');
 const { makeid } = require('../util/makeId.cjs');
 const { findCondition, findConditionTrue } = require('../util/findCondition.cjs');
 const { hasFinalizer } = require('../util/finalizer.cjs');
@@ -114,7 +115,16 @@ class MyWorld extends World {
         name: this.kc.getCurrentContext(),
       });
     }
-    this.api = KubernetesObjectApi.makeApiClient(this.kc);
+    const api = KubernetesObjectApi.makeApiClient(this.kc);
+    this.api = {
+      create: retry(api.create.bind(api)),
+      delete: retry(api.delete.bind(api)),
+      patch: retry(api.patch.bind(api)),
+      read: retry(api.read.bind(api)),
+      list: retry(api.list.bind(api)),
+      replace: retry(api.list.bind(api)),
+      watch: retry(api.watch.bind(api)),
+    };
     this.watchedResources = new WatchedResources(this, this.kc);
   }
 
