@@ -8,7 +8,10 @@ function retry(fn) {
   return async function () {
     try {
       return await fn(...arguments);
-    } catch {
+    } catch (err) {
+      if (typeof err.statusCode == 'number' && err.statusCode == 404) {
+        throw err;
+      }
       await sleep(300);
       return await fn(...arguments);
     }
