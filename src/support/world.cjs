@@ -210,11 +210,10 @@ class MyWorld extends World {
    * @returns {string}
    */
   templateWithThrow(template) {
-    // if starts and ends with backtick ` evaluate it as js template literal
-    if (template.startsWith("`") && template.endsWith("`")) {
-      return this.evalWithThrow(template);
+    if (!template.startsWith("`") && !template.endsWith("`")) {
+      template = '`'+template+'`';
     }
-    return template;
+    return this.evalWithThrow(template);
   }
 
   /**
