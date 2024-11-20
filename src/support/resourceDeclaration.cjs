@@ -3,6 +3,7 @@ const { ListWatch, Watch, KubernetesObject, V1APIResource, KubeConfig } = requir
 const { getListFn } = require('../k8s/list.cjs');
 const { KindToResourceMapper } = require('../k8s/kindToResourceMapper.cjs');
 const { sleep } = require('../util/sleep.cjs');
+const { logger } = require('../util/logger.cjs');
 
 class ResourceDeclaration {
 
@@ -231,14 +232,14 @@ class WatchedResources {
       if (!item.evaluated) {
         try {
           const nameEvaluated = this.world.templateWithThrow('`'+item.name+'`');
-          if (!nameEvaluated) {
+          if (!nameEvaluated || nameEvaluated.includes('undefined')) {
             throw new Error('empty name');
           }
           item.name = nameEvaluated;
           if (item.resource.namespaced) {
             if (item.namespace) {
               const namespaceEvaluated = this.world.templateWithThrow('`'+item.namespace+'`');
-              if (!namespaceEvaluated) {
+              if (!namespaceEvaluated || namespaceEvaluated.includes('undefined')) {
                 throw new Error('empty namespace');
               }
               item.namespace = namespaceEvaluated;
@@ -249,6 +250,13 @@ class WatchedResources {
             item.namespace = '';
           }
           item.evaluated = true;
+          logger.info('Watched resource evaluated', {
+            alias: item.alias,
+            kind: item.kind,
+            apiVersion: item.apiVersion,
+            name: item.name,
+            namespace: item.namespace,
+          });
         } catch {
           item.obj = undefined;
           continue;
@@ -270,14 +278,35 @@ class WatchedResources {
         spec.metadata.namespace = item.namespace;
       }
 
+      const oldObj = item.obj;
+
       try {
         const resp = await this.world.api.read(spec);
         if (resp.body) {
           item.obj = resp.body;
+          if (!oldObj) {
+            logger.info('Created resource loaded', {
+              alias: item.alias,
+              kind: item.kind,
+              apiVersion: item.apiVersion,
+              name: item.name,
+              namespace: item.namespace,
+              state: item.obj.status ? item.obj.status.state : '',
+              conditions: item.obj.status && item.obj.status.conditions ?
+                item.obj.status.conditions.map(c => `{${c.type}/${c.reason}/${c.message}}`) : '',
+            });
+          }
         } else {
           item.obj = undefined;
         }
       } catch (err) {
+        logger.info('Deleted resource loaded', {
+          alias: item.alias,
+          kind: item.kind,
+          apiVersion: item.apiVersion,
+          name: item.name,
+          namespace: item.namespace,
+        });
         item.obj = undefined; // err.statusCode == 404
         continue;
       }

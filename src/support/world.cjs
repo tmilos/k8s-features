@@ -16,6 +16,7 @@ const { AbstractFileOperation } = require('../fs/fileOperation.cjs');
 const { PodMountConfigMapPatcher } = require('../k8s/patcher/podMountConfigMapPatcher.cjs');
 const { inspect } = require('node:util');
 const { Clock } = require('../util/clock.cjs');
+const { logger } = require('../util/logger.cjs');
 
 /**
  * @typedef IMyWorldParams
@@ -310,15 +311,25 @@ class MyWorld extends World {
     }
 
     if (itemsToDelete.length) {
-      console.log('Deleting created resources...');
       for (let { item, obj } of itemsToDelete) {
+        logger.info('Deleting created resource', {
+          alias: item.alias,
+          kind: item.kind,
+          apiVersion: item.apiVersion,
+          name: item.name,
+          namespace: item.namespace,
+        });
         try {
           await this.api.delete(obj);
         } catch (e) {
-          console.error(`Failed deleting ${item.alias} of kind ${item.kind} in group ${item.apiVersion}: ${"\n"}${e}`);
-          console.log();
+          logger.error('Failed deleting created resource', err, {
+            alias: item.alias,
+            kind: item.kind,
+            apiVersion: item.apiVersion,
+            name: item.name,
+            namespace: item.namespace,
+          });
         }
-        console.log(`${item.alias}   ${obj.apiVersion}/${obj.kind}   ${obj.metadata.namespace ? [obj.metadata.namespace,'/',obj.metadata.name].join('') : obj.metadata.name}`)
       }
     }
   }
@@ -354,10 +365,16 @@ class MyWorld extends World {
       await this.api.replace(obj, undefined, undefined, 'k8f');
     } catch (err) {
       if (err instanceof HttpError && err.body instanceof V1Status) {
-        console.log('Update error', inspect(err.body), inspect(obj), err.stack);
+        logger.error('Update error', {
+          obj,
+          errBody: err.body,
+          errStack: err.stack,
+        })
         throw new Error(`Update error: ${err.body.message}`);
       }
-      console.log('Update error', err, inspect(obj));
+      logger.error('Update error', err, {
+        obj,
+      })
       throw new Error(`Update error: ${err}`);
     }
   }
@@ -398,10 +415,16 @@ class MyWorld extends World {
       });
     } catch (err) {
       if (err instanceof HttpError && err.body instanceof V1Status) {
-        console.log('Patch error', inspect(err.body), inspect(obj), err.stack);
+        logger.error('Patch error', {
+          obj,
+          errBody: err.body,
+          errStack: err.stack,
+        })
         throw new Error(`Patch error: ${err.body.message}`);
       }
-      console.log('Patch error', err, inspect(obj));
+      logger.error('Patch error', err, {
+        obj,
+      })
       throw new Error(`Patch error: ${err}`);
     }
 
@@ -451,7 +474,9 @@ class MyWorld extends World {
     try {
       await this.api.delete(obj);
     } catch (err) {
-      console.log(`Error deleting obj: ${err}`);
+      logger.error('Error deleting obj', err, {
+        obj,
+      });
       throw new Error(`Error deleting obj: ${err}`);
     }
   }
@@ -800,7 +825,10 @@ ${scriptLines.map(l => '      '+l).join("\n")}
           return; //apiVersion does not exist
         }
         // not sure what this is, just log it
-        console.log(err);
+        logger.error('eventuallyKindDoesNotExist getAllResourcesFromApiVersion error', err, {
+          kind,
+          apiVersion,
+        });
         continue;
       }
 

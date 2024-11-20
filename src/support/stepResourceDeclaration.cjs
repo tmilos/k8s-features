@@ -25,11 +25,6 @@ async function resourceDeclaration(world, table) {
     // evaluation of the next ones
     await world.addWatchedResources(res);
   }
-  console.log('Added resources:')
-  for (let res of resources) {
-    const item = world.getItem(res.alias);
-    console.log(`  ${item.alias}  ${item.kind}  ${item.apiVersion}  ${item.name}  ${item.namespace}`);
-  }
 }
 
 module.exports = {
