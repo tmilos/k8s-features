@@ -285,7 +285,7 @@ class WatchedResources {
         if (resp.body) {
           item.obj = resp.body;
           if (!oldObj) {
-            logger.info('Created resource loaded', {
+            logger.info('Non-existing resource created', {
               alias: item.alias,
               kind: item.kind,
               apiVersion: item.apiVersion,
@@ -300,13 +300,15 @@ class WatchedResources {
           item.obj = undefined;
         }
       } catch (err) {
-        logger.info('Deleted resource loaded', {
-          alias: item.alias,
-          kind: item.kind,
-          apiVersion: item.apiVersion,
-          name: item.name,
-          namespace: item.namespace,
-        });
+        if (oldObj) {
+          logger.info('Existing resource deleted', {
+            alias: item.alias,
+            kind: item.kind,
+            apiVersion: item.apiVersion,
+            name: item.name,
+            namespace: item.namespace,
+          });
+        }
         item.obj = undefined; // err.statusCode == 404
         continue;
       }

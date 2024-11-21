@@ -161,7 +161,7 @@ async function redisCmd(world, cmd, expectedOutput, dataTable) {
     command += ` --tls`;
   }
   if (setValues.ca != '') {
-    command += `--cacert /mnt/cacert/${setValues.ca}`;
+    command += ` --cacert /mnt/cacert/${setValues.ca}`;
   }
   command += ` ${cmd}`;
   scriptLines.push(command);
