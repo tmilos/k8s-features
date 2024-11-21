@@ -75,15 +75,15 @@ function volumePatcherForParam(world, rowName, row, volumeName) {
       mustHaveColumn(rowName, row, 2, 'secret name');
       mustHaveColumn(rowName, row, 3, 'secret key');
       return {
-        patcher: new PodMountSecretPatcher(row[2], volumeName),
-        key: row[3],
+        patcher: new PodMountSecretPatcher(world.template(row[2]), volumeName),
+        key: world.template(row[3]),
       }
     case 'ConfigMap':
       mustHaveColumn(rowName, row, 2, 'configmap name');
       mustHaveColumn(rowName, row, 3, 'configmap key');
       return {
-        patcher: new PodMountConfigMapPatcher(row[2], volumeName),
-        key: row[3],
+        patcher: new PodMountConfigMapPatcher(world.template(row[2]), volumeName),
+        key: world.template(row[3]),
       }
     default:
       throw new Error(`The Redis param ${rowName} must be specified in secret or configmap`);
