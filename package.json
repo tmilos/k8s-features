@@ -1,6 +1,6 @@
 {
   "name": "k8s-features",
-  "version": "1.3.6",
+  "version": "1.3.7",
   "main": "lib.cjs",
   "scripts": {
     "index": "node ./scripts/makeIndex.cjs src/step_definitions src/support",
