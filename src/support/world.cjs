@@ -535,6 +535,34 @@ class MyWorld extends World {
   }
 
   /**
+   * Rejects if specified container/pod does not contain given content
+   * @param {string} alias
+   * @param {string} containerName
+   * @param {string} content
+   * @returns {Promise<void>}
+   */
+  async assertLogsContain(alias, containerName, content) {
+    this._assertString(alias);
+    this._assertString(content);
+
+    const item = this.getItem(alias);
+    if (!item) {
+      throw new Error(`Item ${alias} is not declated`);
+    }
+    if (!item.evaluated) {
+      throw new Error(`Item ${alias} is not evaluated`);
+    }
+
+    const logs = await this.getLogs(item.name, item.namespace, containerName);
+
+    if (logs && logs.includes(content)) {
+      return;
+    }
+
+    throw new Error(`Container ${containerName} in pod ${alias} expected to have ${content} in logs, but found: ${logs}`);
+  }
+
+  /**
    *
    * @param {string} name
    * @param {string} namespace

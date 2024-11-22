@@ -7,6 +7,7 @@ require('./stepKindDoesNotExist.cjs');
 require('./stepKindExists.cjs');
 require('./stepKindsDoNotExist.cjs');
 require('./stepKindsExist.cjs');
+require('./stepLogsContain.cjs');
 require('./stepPvcFileOperations.cjs');
 require('./stepRedis.cjs');
 require('./stepResourceDoesNotExist.cjs');
