@@ -1,6 +1,7 @@
-const { setWorldConstructor, Before, setDefaultTimeout, After } = require('@cucumber/cucumber');
+const { setWorldConstructor, Before, setDefaultTimeout, After, AfterStep } = require('@cucumber/cucumber');
 const { MyWorld } = require('../support/world.cjs');
-
+const { TestStepResultStatus } = require('@cucumber/messages');
+const { logger } = require('../util/logger.cjs');
 
 setWorldConstructor(MyWorld);
 
@@ -32,3 +33,15 @@ After(
   }
 );
 
+AfterStep(
+  /**
+   * @this MyWorld
+   * @param {import('@cucumber/cucumber').ITestCaseHookParameter} param
+   */
+  function(param) {
+    if (param.result.status === TestStepResultStatus.FAILED && !param.willBeRetried) {
+      const ctx = this.evalContext();
+      logger.info('Context objects', ctx);
+    }
+  }
+);

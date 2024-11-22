@@ -579,7 +579,13 @@ ${scriptLines.map(l => '      '+l).join("\n")}
     } catch (err) {
       throw new Error(`Error parsing ConfigMap manifest for createPod: ${err}\n${cmManifest}`, {cause: err});
     }
-    await this.applyObject(cmObj);
+
+    try {
+      await this.applyObject(cmObj);
+    } catch (err) {
+      console.error(inspect(err));
+      throw new Error(`Error creating ConfigMap for Pod: ${err}\n${cmManifest}`, {cause: err});
+    }
 
     const podManifest = `
   apiVersion: v1
@@ -614,8 +620,9 @@ ${scriptLines.map(l => '      '+l).join("\n")}
     }
 
     try {
-    await this.applyObject(podObj);
+      await this.applyObject(podObj);
     } catch (err) {
+      console.error(inspect(err));
       throw new Error(`Error creating pod: ${err}\n${podManifest}\n---\n${cmManifest}\n`, {cause: err});
     }
 
@@ -670,7 +677,16 @@ ${scriptLines.map(l => '      '+l).join("\n")}
     this.watchedResources.add(name, 'Pod', 'v1', name, namespace);
     await this.watchedResources.startWatches();
 
-    const {podObj, cmObj} = await this.createPod(name, namespace, scriptLines, 'ubuntu', new PodMountPvcPatcher(pvcObj.metadata.name));
+    /** @type {KubernetesObject} */
+    let podObj;
+    /** @type {KubernetesObject} */
+    let cmObj;
+    try {
+      ({podObj, cmObj} = await this.createPod(name, namespace, scriptLines, 'ubuntu', new PodMountPvcPatcher(pvcObj.metadata.name)));
+    } catch (err) {
+      console.error(inspect(err));
+      throw new Error(`Error creating Pod for PVC operation: ${err}`, {cause: err});
+    }
 
     let failed = false;
 
@@ -683,10 +699,28 @@ ${scriptLines.map(l => '      '+l).join("\n")}
       failed = true;
     }
 
-    const logs = await this.getLogs(name, namespace, name);
+    /** @type {string} */
+    let logs;
+    try {
+      logs = await this.getLogs(name, namespace, name);
+    } catch (err) {
+      console.error(inspect(err));
+      throw new Error(`Error getting Pod logs for PVC operation: ${err}`, {cause: err});
+    }
 
-    await this.delete(podObj);
-    await this.delete(cmObj);
+    try {
+      await this.delete(podObj);
+    } catch (err) {
+      console.error(inspect(err));
+      throw new Error(`Error deleting Pod for PVC operation: ${err}`, {cause: err});
+    }
+
+    try {
+      await this.delete(cmObj);
+    } catch (err) {
+      console.error(inspect(err));
+      throw new Error(`Error deleting ConfigMap for PVC operation: ${err}`, {cause: err});
+    }
 
     if (failed || logs.indexOf(allDone) !== -1) {
       return;
