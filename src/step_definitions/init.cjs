@@ -2,6 +2,7 @@ const { setWorldConstructor, Before, setDefaultTimeout, After, AfterStep } = req
 const { MyWorld } = require('../support/world.cjs');
 const { TestStepResultStatus } = require('@cucumber/messages');
 const { logger } = require('../util/logger.cjs');
+const { inspect } = require('node:util');
 
 setWorldConstructor(MyWorld);
 
@@ -41,7 +42,7 @@ AfterStep(
   function(param) {
     if (param.result.status === TestStepResultStatus.FAILED && !param.willBeRetried) {
       const ctx = this.evalContext();
-      logger.info('Context objects', ctx);
+      logger.info('Context objects', inspect(ctx, false, 4, true));
     }
   }
 );
