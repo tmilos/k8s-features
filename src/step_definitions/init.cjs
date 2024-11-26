@@ -42,7 +42,7 @@ AfterStep(
   function(param) {
     if (param.result.status === TestStepResultStatus.FAILED && !param.willBeRetried) {
       const ctx = this.evalContext();
-      logger.info('Context objects', inspect(ctx, false, 5, true));
+      logger.info('Context objects', inspect(ctx, false, 5));
     }
   }
 );
