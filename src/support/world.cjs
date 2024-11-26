@@ -388,18 +388,39 @@ class MyWorld extends World {
    */
   async applyObject(obj, item, deleteOnFinish = false) {
     if (item) {
+      if (!item.evaluated) {
+        throw new Error(`Declared resource ${item.alias} is not evaluated - ie its apiVersion and kind not observed in the cluster, or its name and namespace not evaluated`);
+      }
       if (!obj.metadata) {
         obj.metadata = {};
       }
+      if (obj.metadata.name) {
+        throw new Error(`Declated resource ${item.alias} has name set, and it needs to be empty since name is defined in the resource declaration`);
+      }
+      if (obj.metadata.namespace) {
+        throw new Error(`Declated resource ${item.alias} has namespace set, and it needs to be empty since namespace is defined in the resource declaration`);
+      }
       obj.metadata.name = item.name;
-      if (item.namespace) {
-        obj.metadata.namespace = item.namespace;
+      if (item.resource.namespaced) {
+        if (item.namespace) {
+          obj.metadata.namespace = item.namespace;
+        } else {
+          item.namespace = this.parameters.namespace ?? 'default';
+          obj.metadata.namespace = item.namespace;
+        }
       }
       if (!obj.apiVersion) {
         obj.apiVersion = item.apiVersion;
       }
       if (!obj.kind) {
         obj.kind = item.kind;
+      }
+
+      if (obj.apiVersion != item.apiVersion) {
+        throw new Error(`Declared resource ${item.alias} apiVersion is ${item.apiVersion} while given manifest apiVersin is ${obj.apiVersion}`);
+      }
+      if (obj.kind != item.kind) {
+        throw new Error(`Declared resource ${item.alias} kind is ${item.kind} while given manifest kind is ${obj.kind}`);
       }
     }
 
