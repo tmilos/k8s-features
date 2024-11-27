@@ -178,23 +178,50 @@ async function redisCmd(world, cmd, expectedOutput, dataTable) {
     namespace,
   })
 
-  const { podObj, cmObj } = await world.createPod(name, namespace, scriptLines, `redis:${setValues.version}`, ...patchers);
+  /** @type {import('@kubernetes/client-node').KubernetesObject} */
+  let podObj;
+  /** @type {import('@kubernetes/client-node').KubernetesObject} */
+  let cmObj;
+  try {
+    ({ podObj, cmObj } = await world.createPod(name, namespace, scriptLines, `redis:${setValues.version}`, ...patchers));
+  } catch (err) {
+    console.error(inspect(err));
+    throw new Error(`Error creating Pod for redis: ${err}`, {cause: err});
+  }
 
   await world.eventuallyValueIsOk(
     `${name}.status.phase == "Succeeded"`,
     `${name}.status.phase == "Failed"`
   );
 
-  const logs = await world.getLogs(name, namespace, name);
+  /** @type {string} */
+  let logs;
+  try {
+    logs = await world.getLogs(name, namespace, name);
+  } catch (err) {
+    console.error(inspect(err));
+    throw new Error(`Error getting Pod logs for redis: ${err}`, {cause: err});
+  }
 
-  await world.delete(podObj);
-  await world.delete(cmObj);
+  try {
+    await world.delete(podObj);
+  } catch (err) {
+    console.error(inspect(err));
+    throw new Error(`Error deleting Pod for redis: ${err}`, {cause: err});
+  }
+
+  try {
+    await world.delete(cmObj);
+  } catch (err) {
+    console.error(inspect(err));
+    throw new Error(`Error deleting ConfigMap for redis: ${err}`, {cause: err});
+  }
 
   if (logs.includes(expectedOutput)) {
     return;
   }
 
-  throw new Error(`Redis command ${cmd} failed: ${"\n"+logs}`);
+  throw new Error(`Redis command ${cmd} failed:\n${logs}`);
 }
 
 module.exports = {
