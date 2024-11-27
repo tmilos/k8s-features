@@ -42,6 +42,13 @@ class MyWorld extends World {
     this.kc = new KubeConfig();
 
     /**
+     * Seconds between unless expression evaluates to true and time
+     * when it will be considered as non transient and test fails.
+     * @type {number}
+     */
+    this.unlessFailureTimeoutSeconds = 300;
+
+    /**
      * @type {KubernetesObjectApi | undefined}
      */
     this.api = undefined;
@@ -275,6 +282,9 @@ class MyWorld extends World {
   async eventuallyValueIsOk(actualExp, ...unlessExpressions) {
     this._assertArrayOfStrings(unlessExpressions, false);
 
+    /** @type {Map<string, Date>} */
+    const failures = new Map();
+
     while (!this.stopped) {
       const actual = this.eval(actualExp);
       if (actual) {
@@ -282,9 +292,19 @@ class MyWorld extends World {
       }
       for (let unlessExp of unlessExpressions) {
         const unlessValue = this.eval(unlessExp);
+
         if (unlessValue) {
-          throw new Error(`unless expression "${unlessExp}" is ok`);
-          return;
+          if (!failures.has(unlessExp)) {
+            failures.set(unlessExp, new Date());
+          }
+          const now = new Date();
+          const since = failures.get(unlessExp);
+          const durationSeconds = (now.getTime() - since.getTime())/1000;
+          if (durationSeconds > this.unlessFailureTimeoutSeconds) {
+            throw new Error(`unless expression "${unlessExp}" is ok for ${this.unlessFailureTimeoutSeconds} seconds`);
+          }
+        } else if (failures.has(unlessExp)) {
+          failures.delete(unlessExp);
         }
       }
 
