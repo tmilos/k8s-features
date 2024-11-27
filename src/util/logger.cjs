@@ -21,7 +21,7 @@ class MyConsole extends TransportStream {
     for (let k in rest) {
       const v = rest[k];
       if (true || typeof v === 'object' || typeof v === 'function') {
-        console.log(`  ${colors.gray(k)}: ${inspect(v)}`);
+        console.log(`  ${colors.gray(k)}: ${inspect(v, undefined, 4)}`);
       }
     }
 
