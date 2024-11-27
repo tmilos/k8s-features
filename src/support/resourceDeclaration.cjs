@@ -109,6 +109,11 @@ class WatchedResources {
      * @private
      */
     this._watchCount = 0;
+
+    /**
+     * @type {Map<string, string>}
+     */
+    this._evaluationErrorCache = new Map();
   }
 
   /**
@@ -196,6 +201,8 @@ class WatchedResources {
         kind: item.kind,
         name: item.name,
         namespace: item.namespace,
+        evaluated: item.evaluated,
+        deleteOnFinish: item.deleteOnFinish,
         resource: item.resource,
         obj,
       };
@@ -231,14 +238,14 @@ class WatchedResources {
 
       if (!item.evaluated) {
         try {
-          const nameEvaluated = this.world.templateWithThrow('`'+item.name+'`');
+          const nameEvaluated = this.world.templateWithThrow(item.name);
           if (!nameEvaluated || nameEvaluated.includes('undefined')) {
             throw new Error('empty name');
           }
           item.name = nameEvaluated;
           if (item.resource.namespaced) {
             if (item.namespace) {
-              const namespaceEvaluated = this.world.templateWithThrow('`'+item.namespace+'`');
+              const namespaceEvaluated = this.world.templateWithThrow(item.namespace);
               if (!namespaceEvaluated || namespaceEvaluated.includes('undefined')) {
                 throw new Error('empty namespace');
               }
@@ -250,6 +257,7 @@ class WatchedResources {
             item.namespace = '';
           }
           item.evaluated = true;
+          this._evaluationErrorCache.delete(item.alias);
           logger.info('Watched resource evaluated', {
             alias: item.alias,
             kind: item.kind,
@@ -257,7 +265,24 @@ class WatchedResources {
             name: item.name,
             namespace: item.namespace,
           });
-        } catch {
+        } catch (err) {
+          const keyObj = {
+            msg: `Error evaluating item ${item.alias}: ${err}`,
+            err,
+          };
+          const key = JSON.stringify(keyObj);
+          if (!this._evaluationErrorCache.has(item.alias) || this._evaluationErrorCache.get(item.alias) != key) {
+            this._evaluationErrorCache.set(item.alias, key);
+            logger.info(keyObj.msg, {
+              alias: item.alias,
+              kind: item.kind,
+              apiVersion: item.apiVersion,
+              name: item.name,
+              namespace: item.namespace,
+              errTxt: `${err}`,
+              err,
+            });
+          }
           item.obj = undefined;
           continue;
         }
@@ -338,7 +363,7 @@ class WatchedResources {
       this.started = true;
       this._watchInterval();
     }
-    while (seenCount +1 >= this._watchCount) {
+    while (seenCount + 1 >= this._watchCount) {
       await sleep(300);
     }
   }

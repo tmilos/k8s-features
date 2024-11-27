@@ -1,4 +1,4 @@
-const { createLogger, format, transports } = require('winston');
+const { createLogger, format } = require('winston');
 const TransportStream = require('winston-transport');
 const { inspect } = require('node:util');
 const colors = require('@colors/colors/safe');
@@ -50,13 +50,6 @@ class Logger {
             format.splat(),
           ),
         }),
-        // new transports.Console({
-        //   format: format.combine(
-        //     format.colorize(),
-        //     format.simple(),
-        //     format.splat(),
-        //   )
-        // }),
       ]
     });
   }

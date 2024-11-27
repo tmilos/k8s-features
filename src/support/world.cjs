@@ -408,6 +408,9 @@ class MyWorld extends World {
    */
   async applyObject(obj, item, deleteOnFinish = false) {
     if (item) {
+      // wait for one watch loop to eventually get items evaluated if not so far
+      await this.watchedResources.startWatches();
+
       if (!item.evaluated) {
         throw new Error(`Declared resource ${item.alias} is not evaluated - ie its apiVersion and kind not observed in the cluster, or its name and namespace not evaluated`);
       }
