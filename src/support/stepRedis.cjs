@@ -7,6 +7,7 @@ const { PodEnvFixedPatcher } = require('../k8s/patcher/podEnvFixedPatcher.cjs');
 const { makeid } = require('../util/makeId.cjs');
 const { PodMountSecretPatcher } = require('../k8s/patcher/podMountSecretPatcher.cjs');
 const { PodMountConfigMapPatcher } = require('../k8s/patcher/podMountConfigMapPatcher.cjs');
+const { inspect } = require('node:util');
 
 class RedisCmdGivenParams {
   host = false;
