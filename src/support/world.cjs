@@ -180,6 +180,9 @@ class MyWorld extends World {
     const ctx = {
       ...this.watchedResources.contextObjects(),
       namespace: this.parameters.namespace ?? 'default',
+      params: {
+        ...this.parameters,
+      },
       id: makeid,
       findCondition,
       findConditionTrue,

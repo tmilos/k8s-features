@@ -1,9 +1,9 @@
 # K8S Features
 
-A [Cucumber-js](https://github.com/cucumber/cucumber-js) base library for Kubernetes 
-Gherkin tests, with base 
+A [Cucumber-js](https://github.com/cucumber/cucumber-js) base library for Kubernetes
+Gherkin tests, with base
 [world](https://github.com/cucumber/cucumber-js/blob/main/docs/support_files/world.md),
-step helper and k8s utility functions, using 
+step helper and k8s utility functions, using
 [javascript kubernetes client](https://github.com/kubernetes-client/javascript).
 
 ## Getting started
@@ -24,7 +24,7 @@ Feature: Test feature
       | Alias | Kind      | ApiVersion | Name            | Namespace  |
       | cm    | ConfigMap | v1         | `test-${id(4)}` |            |
     When ConfigMap cm is created
-    Then eventually "cm.data.foo == 'bar'" is ok 
+    Then eventually "cm.data.foo == 'bar'" is ok
 EOF
 ```
 
@@ -95,19 +95,20 @@ npx cucumber-js
 The lib uses [safe-eval](https://www.npmjs.com/package/safe-eval) for expression
 evaluation. The expressions can be specified in the steps or resource declaration. Be
 aware of the vulnerabilities that lib brings. Having in mind that internal stuff
-will be writing resposibly test features and expressions being evaluated, and that 
+will be writing resposibly test features and expressions being evaluated, and that
 also jailbreaking the sandbox would reach just your test suite w/out any critical exploits
-you will be ok. Otherwise, take appropriate measutes to secure yourself. 
+you will be ok. Otherwise, take appropriate measutes to secure yourself.
 
 ### Evaluation context
 
 In the javascript sandbox used for expression evaluation following globals are set:
 * all watched/declared resources by their Alias name as key
 * `_` object with a property for each watched/declared resource with all declated and evaluated
-  fields, plus the `resource` property of the type `V1APIResource`. This is usefull in case when 
+  fields, plus the `resource` property of the type `V1APIResource`. This is usefull in case when
   one declated resource depends on the templated name of the other that does not exist yet. In that
   case instead of `first.metadata.name` you would do `_.first.name`.
 * namespace - the namespace world param, defaults to `default` if not specified
+* params - cucumber-js world parameters
 * id() - a function that generates random string
 * findCondition() - a function that returns condition of specified type for the given object
 * findConditionTrue() - a function that returns condition with status 'True' of specified type for the given object
@@ -119,9 +120,9 @@ In some steps like resource declatation for some data table columns it is possib
 both constant literal value and javascript template literal that will be evaluated. For example
 for the column `Name` of the resource declaration step you can provide:
 
-    | Alias | ... | Name                | 
+    | Alias | ... | Name                |
     | aa    | ... | fixed               |
-    | bb    | ... | `test-${_.aa.name}` | 
+    | bb    | ... | `test-${_.aa.name}` |
 
 That would produce `aa` with name `fixed`, and `bb` with name `test-fixed`.
 
@@ -140,20 +141,20 @@ That would produce `aa` with name `fixed`, and `bb` with name `test-fixed`.
 ```
 The step `resources are watched` and `resources are watched` are synonyms are there's no difference.
 
-Declares alias, kind, apiVersion, name and optional namespace of the resources that will be 
+Declares alias, kind, apiVersion, name and optional namespace of the resources that will be
 watched. At the moment of this step execution, the declared resource must exist in the cluster,
-otherwise the watch will throw error and test will fail. The alias under which a resource is 
+otherwise the watch will throw error and test will fail. The alias under which a resource is
 declared can be used in expressions. Since it will be watched, the resource's freshest possible
 copy will be available in the local cache. If the resource by the declated name does not exist,
 it's value in expressions will be `undefined`.
 
 The data table must have columns Alias, Kind, ApiVersion, Name, Namespace. All are required, must have content,
-except the Namespace column. If it's empty and the resource is namespace scope, then it will get the world 
-parameter `namespace` value, or by default the `default` value. 
+except the Namespace column. If it's empty and the resource is namespace scope, then it will get the world
+parameter `namespace` value, or by default the `default` value.
 
 For Name and Namespace columns the expressions can be used, that are evaluated once at the moment of the step
-execution. If an undefined value from the context is used in the expression, like for example a resource 
-that does not exist yet, the error will be thrown and test will fail. 
+execution. If an undefined value from the context is used in the expression, like for example a resource
+that does not exist yet, the error will be thrown and test will fail.
 
 
 ### When resource {word} is applied
@@ -169,7 +170,7 @@ that does not exist yet, the error will be thrown and test will fail.
 ```
 
 Executes the server side apply with the given yaml manifest on the watched resource X. The apiVersion, kind,
-name and namespace are optional, and if ommitted they will be taken from the resource declaration. 
+name and namespace are optional, and if ommitted they will be taken from the resource declaration.
 
 
 ### When resource {word} is created
@@ -191,13 +192,13 @@ will be deleted.
 ### Then "expression" is ok
 
 ```gherkin
-  Then "cm.data.foo == 'bar'" is true 
+  Then "cm.data.foo == 'bar'" is true
 ```
 
 Evalutes the expression and passes if value is truthy.
 
 
-### Then eventually "expression" is ok 
+### Then eventually "expression" is ok
 
 ```gherkin
   Then eventually "pod.status.phase == 'Succeeded'" is ok
@@ -213,8 +214,8 @@ Keeps evaluating the expression in the loop until it's value becomes truthy when
     | pod.status.phase == 'Failed' '
 ```
 
-Keeps evaluating the expression in the loop until it's value becomes truthy when it pass, 
-or until any of the unless expressions becomes truthy when it fails. 
+Keeps evaluating the expression in the loop until it's value becomes truthy when it pass,
+or until any of the unless expressions becomes truthy when it fails.
 
 
 ### When resource {word} is deleted
@@ -223,7 +224,7 @@ or until any of the unless expressions becomes truthy when it fails.
   When resource cm is deleted
 ```
 
-Calls the K8S delete API on the specified watched/declared resource. 
+Calls the K8S delete API on the specified watched/declared resource.
 
 
 ### Then resource {word} does not exist
@@ -258,13 +259,13 @@ Passes if specified apiVersion exists, and fails if it does not exist.
 ### eventually kind {word} of {word} does not exist
 
 Keeps checking in a loop if the given kind in apiVersion does not exist. Resolves when
-it doesn't exist. 
+it doesn't exist.
 
 
 ### eventually kind {word} of {word} exists
 
 Keeps checking in a loop if the given kind in apiVersion exists. Resolves when
-it exists. 
+it exists.
 
 
 ### kind {word} of {word} does not exist
@@ -280,8 +281,8 @@ Passes if specified kind in apiVersion exists, and fails if it does not exist.
 ### kinds in apiVersion {word} do not exist
 
 For the given apiVersion it checks if all kinds given in a data table do not
-exist. If any kind exsits, it fails. Data table is without headers, with a 
-single column, listing kinds. 
+exist. If any kind exsits, it fails. Data table is without headers, with a
+single column, listing kinds.
 
 ```gherik
     When kinds in apiVersion example.com do not exist
@@ -291,9 +292,9 @@ single column, listing kinds.
 
 ### kinds in apiVersion {word} exist
 
-For the given apiVersion it checks if all kinds given in a data table 
-exist. If any kind does not exsit, it fails. Data table is without headers, with a 
-single column, listing kinds. 
+For the given apiVersion it checks if all kinds given in a data table
+exist. If any kind does not exsit, it fails. Data table is without headers, with a
+single column, listing kinds.
 
 ```gherik
     When kinds in apiVersion example.com exist
@@ -316,7 +317,7 @@ single column, listing kinds.
 
 Runs a pod with specified watched/declated PersistentVolumeClaim
 as mount and executes given file operations on it. If any of the operations
-fail, the step will throw error and the test will fail. 
+fail, the step will throw error and the test will fail.
 
 
 ### Then redis CMD gives OUTPUT
@@ -336,14 +337,14 @@ parameters. The Host parameter is mandaroty, and others are optional. The
 Version defines the [Redis container image](https://hub.docker.com/_/redis) tag
 to use, and if not specified it defaults to `latest`.
 
-If expected output is found in the pod logs, the step will pass, 
-otherwise it will throw error and the test will fail. 
+If expected output is found in the pod logs, the step will pass,
+otherwise it will throw error and the test will fail.
 
 
 ## Framework
 
 Since this lib brings just the basic steps, it allows you to write your own
-by using it's underlaying framework. 
+by using it's underlaying framework.
 
 ### World
 
@@ -351,7 +352,7 @@ The cucumber-js world has these methods that you can use from your custom step:
 
 #### async addWatchedResources(...resources: IResourceDeclaration): Promise<void>
 
-Adds watched/declated resources. Called by the step 
+Adds watched/declated resources. Called by the step
 [Given resources are watched](#given-resources-are-watched).
 The argument type `IResourceDeclaration` has fields:
 * alias: string
@@ -389,13 +390,13 @@ Evaluates the given javascript expression within the k8s-features [context](#eva
 
 #### async getAllResourcesFromApiVersion(apiVersion: string): Promise<V1APIResource[]>
 
-Returns the list of defined resources for the given apiVersion. The return type 
+Returns the list of defined resources for the given apiVersion. The return type
 [V1APIResource](https://kubernetes-client.github.io/javascript/classes/V1APIResource.html) is from the `@kubernetes/client-node` lib.
 
 
 #### valueIsOk(expression: string): void
 
-Evaluates the expression and throws if result is not truthy. Used by the 
+Evaluates the expression and throws if result is not truthy. Used by the
 [then expression is ok](#then-expression-is-ok) step.
 
 
@@ -409,23 +410,23 @@ rejects when any of the `unlessExpressions` evaluates to falsy.
 
 Calls the K8S update API for the given object. If the optional argument `item` is provided
 and if object has empty apiVersion, kind, name or namespace it will populate them from the
-`item` argument. 
+`item` argument.
 
 
 #### async applyObject(obj: KubernetesObject, item?: ResourceDeclaration, deleteOnFinish = false): Promise<void>
 
-Does a server side apply patch call to the K8S API for the given object. 
+Does a server side apply patch call to the K8S API for the given object.
 If the optional argument `item` is provided
 and if object has empty apiVersion, kind, name or namespace it will populate them from the
-`item` argument. If the optional argument `item` is provided, it will mark it as created by 
-the lib and after all tests are done it will delete it. If the optional argument 
-`deleteOnFinish` is provided it will mark the the item as created, and on scenario end 
+`item` argument. If the optional argument `item` is provided, it will mark it as created by
+the lib and after all tests are done it will delete it. If the optional argument
+`deleteOnFinish` is provided it will mark the the item as created, and on scenario end
 that Kubernetes object will be deleted without wait.
 
 
 #### async applyYamlManifest(manifest: string, item?: ResourceDeclaration, deleteOnFinish = false): Promise<void>
 
-Parse the given yaml `manifest`, and calls the `applyObject()`. 
+Parse the given yaml `manifest`, and calls the `applyObject()`.
 
 
 #### async applyWatchedManifest(alias: string, manifest: string, deleteOnFinish = false): Promise<void>
@@ -441,7 +442,7 @@ Calls the K8S delete API for the given object.
 #### async eventuallyResourceDoesNotExist(alias: string): Promise<void>
 
 Keeps checking the local cache in the loop until given `alias` does not exist
-any more (ie was deleted by the server) and resolves. 
+any more (ie was deleted by the server) and resolves.
 
 
 #### resourceDoesNotExist(alias: string)
@@ -459,7 +460,7 @@ Resolves with the logs for the specified container.
 
 Creates a pod with given name and namespace, bash script lines, and optional container image and patches.
 The specified scriptLines are composed into a ConfigMap with a bash script key which is mounted to the pod
-and given as the entry point. Starts watching of that Pod and ConfigMap and calls `applyObject()` so 
+and given as the entry point. Starts watching of that Pod and ConfigMap and calls `applyObject()` so
 created Pod and ConfigMap will be deleted once the tests are finished.
 Resolves to object with `podObj` and `cmObj` properties, both of the `KubernetesObject` type.
 
@@ -468,15 +469,15 @@ Resolves to object with `podObj` and `cmObj` properties, both of the `Kubernetes
 
 Finds watched PersistentVolumeClaim with specified `alias`, mapps specified `fileOperations` into
 bash script lines, and calls `createPod()` with PVC as mounted volume. If Pod phase eventually
-becomes `Failed` it rejects. When the Pod phase eventually becomes `Succeeded` if inspects the 
-Pod logs with `getLogs()` if all file operations succeeded. Rejects if any failed, or 
+becomes `Failed` it rejects. When the Pod phase eventually becomes `Succeeded` if inspects the
+Pod logs with `getLogs()` if all file operations succeeded. Rejects if any failed, or
 if all file opreations have pass it deletes the created Pod and ConfigMap and resolves.
 
 
 ### Patchers
 
 The `AbstractKubernetesObjectPatcher` defines an interface that receives a `KubernetesObject`
-that it should patch - mutate to some desired state. 
+that it should patch - mutate to some desired state.
 
 #### PodEnvFixedPatcher
 
@@ -567,7 +568,7 @@ Constructor arguments:
 
 #### FileContainsOperation
 
-The `FileContainsOperation` checks if a file with specified path contains specified content. 
+The `FileContainsOperation` checks if a file with specified path contains specified content.
 If the content is not found it exits Pod script with non-zero code, and makes the Pod get the
 `Failed` phase.
 
@@ -577,7 +578,7 @@ Constructor arguments:
 
 #### FileExistsOperation
 
-The `FileContainsOperation` checks if a file with specified path exists. 
+The `FileContainsOperation` checks if a file with specified path exists.
 If the file is not found it exits Pod script with non-zero code, and makes the Pod get the
 `Failed` phase.
 
@@ -586,7 +587,7 @@ Constructor arguments:
 
 #### DeleteFileOperation
 
-The `DeleteFileOperation` deletes a file on the specified path. 
+The `DeleteFileOperation` deletes a file on the specified path.
 
 Constructor arguments:
 * path: string
