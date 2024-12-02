@@ -1,6 +1,7 @@
 const { KubeConfig, Log } = require('@kubernetes/client-node');
 const { WritableStreamBuffer } = require('stream-buffers');
 const { sleep } = require('../util/sleep.cjs');
+const { retry } = require('../util/retry.cjs');
 
 /**
  * @typedef {LogOptions}
@@ -42,5 +43,5 @@ async function log(kc, podName, namespace, container, opts = undefined) {
 }
 
 module.exports = {
-  log,
+  log: retry(log),
 };
