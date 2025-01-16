@@ -1,6 +1,3 @@
-const { DataTable } = require('@cucumber/cucumber');
-const { MyWorld } = require('./world.cjs');
-const { AbstractKubernetesObjectPatcher } = require('../k8s/patcher/types.cjs');
 const { PodEnvFromSecretPatcher } = require('../k8s/patcher/podEnvFromSecretPatcher.cjs');
 const { PodEnvFromConfigMapPatcher } = require('../k8s/patcher/podEnvFromConfigMapPatcher.cjs');
 const { PodEnvFixedPatcher } = require('../k8s/patcher/podEnvFixedPatcher.cjs');
@@ -35,10 +32,10 @@ function mustHaveColumn(rowName, row, index, colName) {
 }
 
 /**
- * @param {MyWorld} world
+ * @param {import("./world.cjs").MyWorld} world
  * @param {string} envVarName
  * @param {string[]} row
- * @returns {AbstractKubernetesObjectPatcher}
+ * @returns {import("../k8s/patcher/types.cjs").AbstractKubernetesObjectPatcher}
  */
 function envPatcherForParam(world, envVarName, row) {
   const valueIndicator = world.templateWithThrow(row[1]);
@@ -63,7 +60,7 @@ function envPatcherForParam(world, envVarName, row) {
  */
 
 /**
- * @param {MyWorld} world
+ * @param {import("./world.cjs").MyWorld} world
  * @param {string} rowName
  * @param {string[]} row
  * @param {string} volumeName
@@ -92,10 +89,10 @@ function volumePatcherForParam(world, rowName, row, volumeName) {
 }
 
 /**
- * @param {MyWorld} world
+ * @param {import("./world.cjs").MyWorld} world
  * @param {string} cmd
  * @param {string} expectedOutput
- * @param {DataTable} dataTable
+ * @param {import("@cucumber/cucumber").DataTable} dataTable
  * @returns {Promise}
  */
 async function redisCmd(world, cmd, expectedOutput, dataTable) {
@@ -119,18 +116,21 @@ async function redisCmd(world, cmd, expectedOutput, dataTable) {
       case 'Auth':
         setValues.auth = true;
         patchers.push(envPatcherForParam(world, 'REDISCLI_AUTH', row));
+        break;
       case 'TLS':
         mustHaveColumn('TLS', row, 1, 'tls enabled');
         setValues.tls = ['true', 'yes', 'on', '1'].includes(world.templateWithThrow(row[1]).toLocaleLowerCase());
         break;
-      case 'CA':
-        const patch = volumePatcherForParam(world, 'CA', row, 'cacert');
-        setValues.ca = patch.key;
-        patchers.push(patch.patcher);
+      case 'CA': {
+          const patch = volumePatcherForParam(world, 'CA', row, 'cacert');
+          setValues.ca = patch.key;
+          patchers.push(patch.patcher);
+        }
         break;
       case 'Version':
         mustHaveColumn('Version', row, 1, 'version');
         setValues.version = world.templateWithThrow(row[1]);
+        break;
       default:
         throw new Error(`Unknown Redis parameter ${row[0]}`);
     }

@@ -1,10 +1,9 @@
 const { When } = require('@cucumber/cucumber');
-const { MyWorld } = require('../support/world.cjs');
 
 When(
   'resource {word} is applied:',
   /**
-   * @this MyWorld
+   * @this import("../support/world.cjs").MyWorld
    * @param {string} alias
    * @param {string} manifest
    * @returns {Promise}
@@ -17,7 +16,7 @@ When(
 When(
   'resource {word} is created:',
   /**
-   * @this MyWorld
+   * @this import("../support/world.cjs").MyWorld
    * @param {string} alias
    * @param {string} manifest
    * @returns {Promise}

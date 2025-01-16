@@ -1,5 +1,4 @@
-const { Given, DataTable } = require('@cucumber/cucumber');
-const { MyWorld } = require('../support/world.cjs');
+const { Given } = require('@cucumber/cucumber');
 const { resourceDeclaration } = require('../support/stepResourceDeclaration.cjs');
 
 /*
@@ -12,8 +11,8 @@ Given resource declaration:
 Given(
   'resource declaration:',
   /**
-   * @this MyWorld
-   * @param {DataTable} table
+   * @this import("../support/world.cjs").MyWorld
+   * @param {import("@cucumber/cucumber").DataTable} table
    * @returns {Promise}
    */
   async function(table) {
@@ -31,8 +30,8 @@ Given resources are watched:
 Given(
   'resources are watched:',
   /**
-   * @this MyWorld
-   * @param {DataTable} table
+   * @this import("../support/world.cjs").MyWorld
+   * @param {import("@cucumber/cucumber").DataTable} table
    * @returns {Promise}
    */
   async function(table) {

@@ -2,7 +2,6 @@ const { setWorldConstructor, Before, setDefaultTimeout, After, AfterStep } = req
 const { MyWorld } = require('../support/world.cjs');
 const { TestStepResultStatus } = require('@cucumber/messages');
 const { logger } = require('../util/logger.cjs');
-const { inspect } = require('node:util');
 
 setWorldConstructor(MyWorld);
 
@@ -10,7 +9,7 @@ setDefaultTimeout(60 * 60 * 1000);
 
 Before(
   /**
-   * @this MyWorld
+   * @this import("../support/world.cjs").MyWorld
    * @returns {Promise}
    */
   async function() {
@@ -22,7 +21,7 @@ Before(
 
 After(
   /**
-   * @this MyWorld
+   * @this import("../support/world.cjs").MyWorld
    * @returns {Promise}
    */
   async function () {
@@ -36,7 +35,7 @@ After(
 
 AfterStep(
   /**
-   * @this MyWorld
+   * @this import("../support/world.cjs").MyWorld
    * @param {import('@cucumber/cucumber').ITestCaseHookParameter} param
    */
   function(param) {

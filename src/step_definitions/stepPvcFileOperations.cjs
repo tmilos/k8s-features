@@ -1,6 +1,4 @@
-const { DataTable, Then } = require('@cucumber/cucumber');
-const { MyWorld } = require('../support/world.cjs');
-const { AbstractFileOperation } = require('../fs/fileOperation.cjs');
+const { Then } = require('@cucumber/cucumber');
 const { CreateFileOperation } = require('../fs/createFileOperation.cjs');
 const { AppendFileOperation } = require('../fs/appendFileOperation.cjs');
 const { DeleteFileOperation } = require('../fs/deleteFileOperation.cjs');
@@ -20,9 +18,9 @@ const { FileExistsOperation } = require('../fs/fileExistsOperation.cjs');
 Then(
   'PVC {word} file operations succeed:',
   /**
-   * @this MyWorld
+   * @this import("../support/world.cjs").MyWorld
    * @param {string} alias
-   * @param {DataTable} table
+   * @param {import("@cucumber/cucumber").DataTable} table
    * @returns {Promise}
    */
   async function(alias, table) {
@@ -37,7 +35,7 @@ Then(
       }
     }
     /**
-     * @type {AbstractFileOperation[]}
+     * @type {import("../fs/fileOperation.cjs").AbstractFileOperation[]}
      */
     const fileOperations = table.hashes().map((row) => {
       mustHaveProp('Operation', row);

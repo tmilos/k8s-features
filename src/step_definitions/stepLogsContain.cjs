@@ -1,10 +1,9 @@
 const { Then } = require('@cucumber/cucumber');
-const { MyWorld } = require('../support/world.cjs');
 
 Then(
   'container {word} in pod {word} contains {string} in logs',
   /**
-   * @this MyWorld
+   * @this import("../support/world.cjs").MyWorld
    * @param {string} containerName
    * @param {string} alias
    * @param {string} content

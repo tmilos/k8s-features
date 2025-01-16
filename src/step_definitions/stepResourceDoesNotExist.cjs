@@ -1,10 +1,9 @@
 const { When } = require('@cucumber/cucumber');
-const { MyWorld } = require('../support/world.cjs');
 
 When(
   'resource {word} does not exist',
   /**
-   * @this MyWorld
+   * @this import("../support/world.cjs").MyWorld
    * @param {string} alias
    * @returns {Promise}
    */
@@ -16,7 +15,7 @@ When(
 When(
   'eventually resource {word} does not exist',
   /**
-   * @this MyWorld
+   * @this import("../support/world.cjs").MyWorld
    * @param {string} alias
    * @returns {Promise}
    */

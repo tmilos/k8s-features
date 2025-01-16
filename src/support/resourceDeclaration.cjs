@@ -1,6 +1,4 @@
 const assert = require('node:assert');
-const { ListWatch, Watch, KubernetesObject, V1APIResource, KubeConfig } = require('@kubernetes/client-node');
-const { getListFn } = require('../k8s/list.cjs');
 const { KindToResourceMapper } = require('../k8s/kindToResourceMapper.cjs');
 const { sleep } = require('../util/sleep.cjs');
 const { logger } = require('../util/logger.cjs');
@@ -33,7 +31,7 @@ class ResourceDeclaration {
     this.apiVersion = apiVersion;
 
     /**
-     * @type {V1APIResource | undefined}
+     * @type {import("@kubernetes/client-node").V1APIResource | undefined}
      */
     this.resource = undefined;
 
@@ -48,7 +46,7 @@ class ResourceDeclaration {
     this.namespace = namespace;
 
     /**
-     * @type {KubernetesObject | undefined}
+     * @type {import("@kubernetes/client-node").KubernetesObject | undefined}
      */
     this.obj = undefined;
 
@@ -59,7 +57,7 @@ class ResourceDeclaration {
 
   /**
    *
-   * @returns {KubernetesObject | undefined}
+   * @returns {import("@kubernetes/client-node").KubernetesObject | undefined}
    */
   getObj() {
     return this.obj;
@@ -78,7 +76,7 @@ class ResourceDeclaration {
 class WatchedResources {
   /**
    * @param {import('./world.cjs').MyWorld} world
-   * @param {KubeConfig} kc
+   * @param {import("@kubernetes/client-node").KubeConfig} kc
    */
   constructor(world, kc) {
     this.started = false;
@@ -158,7 +156,7 @@ class WatchedResources {
   /**
    *
    * @param {string} apiVersion
-   * @returns {Promise<V1APIResource[]>}
+   * @returns {Promise<import("@kubernetes/client-node").V1APIResource[]>}
    */
   async getAllResourcesFromApiVersion(apiVersion) {
     return await this.resourceMapper.getAllResourcesFromApiVersion(apiVersion);
@@ -176,7 +174,7 @@ class WatchedResources {
   /**
    *
    * @param {string} alias
-   * @returns {KubernetesObject | undefined}
+   * @returns {import("@kubernetes/client-node").KubernetesObject | undefined}
    */
   getObj(alias) {
     const item = this.items.get(alias);
@@ -230,7 +228,7 @@ class WatchedResources {
       if (!item.resource) {
         try {
           item.resource = await this.resourceMapper.getResourceFromKind(item.apiVersion, item.kind);
-        } catch (err) {
+        } catch {
           item.obj = undefined;
           continue;
         }
@@ -324,7 +322,7 @@ class WatchedResources {
         } else {
           item.obj = undefined;
         }
-      } catch (err) {
+      } catch {
         if (oldObj) {
           logger.info('Existing resource deleted', {
             alias: item.alias,

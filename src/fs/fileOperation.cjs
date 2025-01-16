@@ -15,7 +15,7 @@ class AbstractFileOperation {
    * @param {string} rootDir
    * @returns {string[]}
    */
-  bash(rootDir) {
+  bash() {
     throw new Error('Abstract method');
   }
 }

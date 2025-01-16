@@ -1,14 +1,13 @@
-const { DataTable, Then } = require('@cucumber/cucumber');
-const { MyWorld } = require('../support/world.cjs');
+const { Then } = require('@cucumber/cucumber');
 
 /*
-  Then "cm.data.foo == 'bar'" is true 
+  Then "cm.data.foo == 'bar'" is true
 */
 Then(
-  '{string} is ok', 
+  '{string} is ok',
   /**
-   * @this MyWorld
-   * @param {string} actualExp 
+   * @this import("../support/world.cjs").MyWorld
+   * @param {string} actualExp
    */
   function(actualExp) {
     this.valueIsOk(actualExp);
@@ -30,7 +29,7 @@ Then(
 Then(
   'eventually {string} is ok',
   /**
-   * @this MyWorld
+   * @this import("../support/world.cjs").MyWorld
    * @param {string} actualExp
    * @returns {Promise}
    */
@@ -46,9 +45,9 @@ Then(
 Then(
   'eventually {string} is ok, unless:',
   /**
-   * @this MyWorld
-   * @param {string} actualExp 
-   * @param {DataTable} unlessTable
+   * @this import("../support/world.cjs").MyWorld
+   * @param {string} actualExp
+   * @param {import("@cucumber/cucumber").DataTable} unlessTable
    * @returns {Promise}
    */
   async function(actualExp, unlessTable) {

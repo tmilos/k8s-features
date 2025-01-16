@@ -1,27 +1,26 @@
-const { KubeConfig, V1APIResource, V1APIResourceList } = require('@kubernetes/client-node');
 const { getAsync } = require('./http.cjs');
 const { ExpiringMap } = require('../util/expiringMap.cjs');
 /**
  * @typedef ListResponseType
  * @property {import('node:http').IncomingMessage} response
- * @property {V1APIResourceList} body
+ * @property {import("@kubernetes/client-node").V1APIResourceList} body
  */
 
 class KindToResourceMapper {
 
   /**
-   * @param {KubeConfig} kc
+   * @param {import("@kubernetes/client-node").KubeConfig} kc
    */
-  constructor(kc, clock) {
+  constructor(kc) {
     /**
-     * @type {KubeConfig}
+     * @type {import("@kubernetes/client-node").KubeConfig}
      * @private
      * @readonly
      */
     this.kc = kc;
 
     /**
-     * @type {Map<string, V1APIResourceList>}
+     * @type {Map<string, import("@kubernetes/client-node").V1APIResourceList>}
      * @private
      * @readonly
      */
@@ -36,7 +35,7 @@ class KindToResourceMapper {
 
   /**
    * @param {string} apiVersion
-   * @returns {Promise<V1APIResource[]>}
+   * @returns {Promise<import("@kubernetes/client-node").V1APIResource[]>}
    */
   async getAllResourcesFromApiVersion(apiVersion) {
     if (this.cache.has(apiVersion)) {
@@ -52,7 +51,7 @@ class KindToResourceMapper {
    *
    * @param {string} apiVersion
    * @param {string} kind
-   * @returns {Promise<V1APIResource | undefined>}
+   * @returns {Promise<import("@kubernetes/client-node").V1APIResource | undefined>}
    */
   async getResourceFromKind(apiVersion, kind) {
     if (this.cache.has(apiVersion)) {

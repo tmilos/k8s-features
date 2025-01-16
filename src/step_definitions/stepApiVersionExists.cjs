@@ -1,10 +1,9 @@
 const { Then } = require('@cucumber/cucumber');
-const { MyWorld } = require('../support/world.cjs');
 
 Then(
   'apiVersion {word} exists',
   /**
-   * @this MyWorld
+   * @this import("../support/world.cjs").MyWorld
    * @param {string} apiVersion
    * @returns {Promise}
    */

@@ -1,5 +1,7 @@
 const { URL } = require('node:url');
 const { makeid } = require('../util/makeId.cjs');
+const { MyWorld } = require('./world.cjs');
+const { DataTable } = require('@cucumber/cucumber');
 
 /*
   Then HTTP operation succeedes:
@@ -24,23 +26,32 @@ class HttpOptions {
    * @param {import("@cucumber/cucumber").DataTable} dataTable
    */
   loadFromDataTable(world, dataTable) {
-    if (!dataTable) {
-      return;
+    if (!(world instanceof MyWorld)) {
+      throw new Error('Missing MyWorld instance');
+    }
+    if (!(dataTable instanceof DataTable)) {
+      throw new Error('Missing DataTable instance');
     }
     for (let row of dataTable.raw()) {
       switch (row[0]) {
         case 'Url':
           this.url = world.templateWithThrow(row[1]);
+          break;
         case 'Method':
           this.method = world.templateWithThrow(row[1]);
+          break;
         case 'ContentType':
           this.contentType = world.templateWithThrow(row[1]);
+          break;
         case 'Data':
           this.data = world.templateWithThrow(row[1]);
+          break;
         case 'MaxTime':
           this.maxTime = world.templateWithThrow(row[1]);
+          break;
         case 'ExpectedOutput':
           this.expectedOutput = world.templateWithThrow(row[1]);
+          break;
         default:
           throw new Error(`Unknown HTTP option ${row[0]}`);
       }

@@ -1,13 +1,12 @@
-const { KubernetesObject } = require('@kubernetes/client-node');
 
 /**
  * @interface
  */
 class AbstractKubernetesObjectPatcher {
   /**
-   * @param {KubernetesObject} obj
+   * @param {import("@kubernetes/client-node").KubernetesObject} obj
    */
-  patch(obj) {
+  patch() {
     throw new Error('Abstract method');
   }
 }

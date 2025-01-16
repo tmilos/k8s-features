@@ -1,11 +1,10 @@
-const { DataTable, Then } = require('@cucumber/cucumber');
-const { MyWorld } = require('../support/world.cjs');
+const { Then } = require('@cucumber/cucumber');
 const { HttpOptions } = require('../support/http.cjs');
 
 Then(
   'HTTP GET to {string} succeedes',
   /**
-   * @this MyWorld
+   * @this import("../support/world.cjs").MyWorld
    * @param {string} url
    */
   async function(url) {
@@ -28,12 +27,12 @@ Then(
 Then(
   'HTTP operation succeedes:',
   /**
-   * @this MyWorld
+   * @this import("../support/world.cjs").MyWorld
    * @param {import("@cucumber/cucumber").DataTable} dataTable
    */
   async function(dataTable) {
     const options = new HttpOptions();
-    options.loadFromDataTable(dataTable);
+    options.loadFromDataTable(this, dataTable);
     await this.http(options);
   }
 );

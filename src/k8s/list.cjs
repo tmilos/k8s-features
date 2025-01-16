@@ -1,17 +1,16 @@
-const { KubeConfig, KubernetesObject, ListPromise, KubernetesListObject } = require('@kubernetes/client-node');
 const { getAsync } = require('./http.cjs');
 
 /**
  * @typedef ListResponseType
  * @property {import('node:http').IncomingMessage} response
- * @property {KubernetesListObject<KubernetesObject>} body
+ * @property {import("@kubernetes/client-node").KubernetesListObject<import("@kubernetes/client-node").KubernetesObject>} body
  */
 
 /**
  *
- * @param {KubeConfig} kc
+ * @param {import("@kubernetes/client-node").KubeConfig} kc
  * @param {string} path
- * @returns {Promise<ListResponseType>|ListPromise<KubernetesObject>}
+ * @returns {Promise<ListResponseType>|import("@kubernetes/client-node").ListPromise<import("@kubernetes/client-node").KubernetesObject>}
  */
 function getListFn(kc, path) {
   return async () => {

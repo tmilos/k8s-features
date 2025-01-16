@@ -1,3 +1,4 @@
+const { DataTable } = require('@cucumber/cucumber');
 const { HttpOptions } = require('../support/http.cjs');
 const { MyWorld } = require('../support/world.cjs');
 const { logger } = require('../util/logger.cjs');
@@ -30,6 +31,20 @@ describe('world.http', function() {
     const options = new HttpOptions();
     options.url = 'http://httpbin.httpbin.svc.cluster.local:8000/base64/SFRUUEJJTiBpcyBhd2Vzb21l';
     options.expectedOutput = 'HTTPBIN is awesome';
+    await world.http(options);
+  });
+
+  it('can http get with data table succesfully', async () => {
+    world.parameters = {
+      ...(world.parameters ?? {}),
+      peeringTarget: 'httpbin.httpbin.svc.cluster.local:8000',
+    };
+    const dataTable = new DataTable([
+      ['Url', 'http://${params.peeringTarget}/base64/SFRUUEJJTiBpcyBhd2Vzb21l'],
+      ['ExpectedOutput', 'HTTPBIN is awesome'],
+    ])
+    const options = new HttpOptions();
+    options.loadFromDataTable(world, dataTable);
     await world.http(options);
   });
 

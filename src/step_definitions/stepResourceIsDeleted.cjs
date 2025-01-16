@@ -1,10 +1,9 @@
 const { When } = require('@cucumber/cucumber');
-const { MyWorld } = require('../support/world.cjs');
 
 When(
   'resource {word} is deleted',
   /**
-   * @this MyWorld
+   * @this import("../support/world.cjs").MyWorld
    * @param {string} alias
    * @returns {Promise}
    */

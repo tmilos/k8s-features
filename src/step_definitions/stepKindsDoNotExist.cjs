@@ -1,12 +1,11 @@
-const { DataTable, Then } = require('@cucumber/cucumber');
-const { MyWorld } = require('../support/world.cjs');
+const { Then } = require('@cucumber/cucumber');
 
 Then(
   'kinds in apiVersion {word} do not exist:',
   /**
-   * @this MyWorld
+   * @this import("../support/world.cjs").MyWorld
    * @param {string} apiVersion
-   * @param {DataTable} dataTable
+   * @param {import("@cucumber/cucumber").DataTable} dataTable
    * @returns {Promise}
    */
   async function (apiVersion, dataTable) {

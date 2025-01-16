@@ -1,23 +1,22 @@
-const { get, RequestOptions } = require('node:https');
-const { IncomingMessage } = require('node:http');
+const { get } = require('node:https');
 
 /**
  * @typedef {GetAsyncResult}
- * @property {IncomingMessage} response
+ * @property {import("node:http").IncomingMessage} response
  * @property {*} body
  */
 
 /**
  *
  * @param {string | URL} url
- * @param {RequestOptions} options
+ * @param {import("node:https").RequestOptions} options
  * @returns {Promise<GetAsyncResult>}
  */
 function getAsync(url, options) {
   return new Promise((resolve, reject) => {
     get(url, options,
       /**
-       * @param {IncomingMessage} res
+       * @param {import("node:http").IncomingMessage} res
        */
       (res) => {
         res.setEncoding('utf8');

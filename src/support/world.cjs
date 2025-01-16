@@ -1,6 +1,6 @@
 const { World } = require('@cucumber/cucumber');
-const { ResourceDeclaration, WatchedResources } = require('./resourceDeclaration.cjs');
-const { HttpError, KubeConfig, KubernetesObject, KubernetesObjectApi, PatchUtils, V1APIResource, V1Status } = require('@kubernetes/client-node');
+const { WatchedResources } = require('./resourceDeclaration.cjs');
+const { HttpError, KubeConfig, KubernetesObjectApi, PatchUtils, V1Status } = require('@kubernetes/client-node');
 const safeEval = require('safe-eval');
 const { ok } = require('assert');
 const { sleep } = require('../util/sleep.cjs');
@@ -8,11 +8,9 @@ const { retry } = require('../util/retry.cjs');
 const { makeid } = require('../util/makeId.cjs');
 const { findCondition, findConditionTrue } = require('../util/findCondition.cjs');
 const { hasFinalizer } = require('../util/finalizer.cjs');
-const { parse: yamlParse, stringify: yamlStringify } = require('yaml');
-const { AbstractKubernetesObjectPatcher } = require('../k8s/patcher/types.cjs');
+const { parse: yamlParse } = require('yaml');
 const { log } = require('../k8s/log.cjs');
 const { PodMountPvcPatcher } = require('../k8s/patcher/podMountPvcPatcher.cjs');
-const { AbstractFileOperation } = require('../fs/fileOperation.cjs');
 const { PodMountConfigMapPatcher } = require('../k8s/patcher/podMountConfigMapPatcher.cjs');
 const { inspect } = require('node:util');
 const { Clock } = require('../util/clock.cjs');
@@ -49,7 +47,7 @@ class MyWorld extends World {
     this.unlessFailureTimeoutSeconds = 300;
 
     /**
-     * @type {KubernetesObjectApi | undefined}
+     * @type {import("@kubernetes/client-node").KubernetesObjectApi | undefined}
      */
     this.api = undefined;
 
@@ -58,7 +56,7 @@ class MyWorld extends World {
     this.eventuallyTimeoutSeconds = 3600;
 
     /**
-     * @type {WatchedResources | undefined}
+     * @type {import("./resourceDeclaration.cjs").WatchedResources | undefined}
      */
     this.watchedResources = undefined;
 
@@ -77,7 +75,7 @@ class MyWorld extends World {
     if (mustHaveLen) {
       ok(val.length);
     }
-    val.forEach(x => this._assertString);
+    val.forEach(this._assertString);
   }
 
   _assertObject(val) {
@@ -91,7 +89,7 @@ class MyWorld extends World {
     if (mustHaveLen) {
       ok(val.length);
     }
-    val.forEach(x => this._assertObject);
+    val.forEach(this._assertObject);
   }
 
   /**
@@ -194,7 +192,7 @@ class MyWorld extends World {
 
   /**
    * @param {string} alias
-   * @returns {ResourceDeclaration | undefined}
+   * @returns {import("./resourceDeclaration.cjs").ResourceDeclaration | undefined}
    */
   getItem(alias) {
     if (!this.watchedResources) {
@@ -205,7 +203,7 @@ class MyWorld extends World {
 
   /**
    * @param {string} alias
-   * @returns {KubernetesObject | undefined}
+   * @returns {import("@kubernetes/client-node").KubernetesObject | undefined}
    */
   getObj(alias) {
     if (!this.watchedResources) {
@@ -232,7 +230,7 @@ class MyWorld extends World {
   eval(expression) {
     try {
       return this.evalWithThrow(expression);
-    } catch (e) {
+    } catch {
       return undefined;
     }
   }
@@ -248,7 +246,7 @@ class MyWorld extends World {
 
   /**
    * @param {string} apiVersion
-   * @returns {Promise<V1APIResource[]>}
+   * @returns {Promise<import("@kubernetes/client-node").V1APIResource[]>}
    */
   async getAllResourcesFromApiVersion(apiVersion) {
     if (!this.watchedResources) {
@@ -311,7 +309,7 @@ class MyWorld extends World {
       throw new Error('It seems init() method was not called in Before hook');
     }
     /**
-     * @type {Array({item: ResourceDeclaration, obj: KubernetesObject})}
+     * @type {Array({item: import("./resourceDeclaration.cjs").ResourceDeclaration, obj: import("@kubernetes/client-node").KubernetesObject})}
      */
     const itemsToDelete = [];
     for (let item of this.watchedResources.getCreatedItems()) {
@@ -332,7 +330,7 @@ class MyWorld extends World {
         });
         try {
           await this.api.delete(obj);
-        } catch (e) {
+        } catch (err) {
           logger.error('Failed deleting created resource', err, {
             alias: item.alias,
             kind: item.kind,
@@ -347,8 +345,8 @@ class MyWorld extends World {
 
   /**
    *
-   * @param {KubernetesObject} obj
-   * @param {ResourceDeclaration | undefined} item
+   * @param {import("@kubernetes/client-node").KubernetesObject} obj
+   * @param {import("./resourceDeclaration.cjs").ResourceDeclaration | undefined} item
    * @returns {Promise}
    */
   async update(obj, item) {
@@ -392,8 +390,8 @@ class MyWorld extends World {
 
   /**
    *
-   * @param {KubernetesObject} obj
-   * @param {ResourceDeclaration | undefined} item
+   * @param {import("@kubernetes/client-node").KubernetesObject} obj
+   * @param {import("./resourceDeclaration.cjs").ResourceDeclaration | undefined} item
    * @param {boolean} deleteOnFinish
    * @returns {Promise}
    */
@@ -472,14 +470,14 @@ class MyWorld extends World {
   /**
    *
    * @param {string} manifest
-   * @param {ResourceDeclaration | undefined} item
+   * @param {import("./resourceDeclaration.cjs").ResourceDeclaration | undefined} item
    * @param {boolean | undefined} deleteOnFinish
    * @returns {Promise}
    */
   async applyYamlManifest(manifest, item, deleteOnFinish = false) {
     manifest = this.templateWithThrow('`'+manifest+'`');
     /**
-     * @type {KubernetesObject}
+     * @type {import("@kubernetes/client-node").KubernetesObject}
      */
     const obj = yamlParse(manifest);
     await this.applyObject(obj, item, deleteOnFinish);
@@ -503,7 +501,7 @@ class MyWorld extends World {
 
   /**
    *
-   * @param {KubernetesObject} obj
+   * @param {import("@kubernetes/client-node").KubernetesObject} obj
    * @returns {Promise}
    */
   async delete(obj) {
@@ -604,8 +602,8 @@ class MyWorld extends World {
    * @param {string} namespace
    * @param {string[]} scriptLines
    * @param {string} image
-   * @param  {...AbstractKubernetesObjectPatcher} patches
-   * @returns {Promise<{podObj: KubernetesObject, cmObj: KubernetesObject}>}
+   * @param  {...import("../k8s/patcher/types.cjs").AbstractKubernetesObjectPatcher} patches
+   * @returns {Promise<{podObj: import("@kubernetes/client-node").KubernetesObject, cmObj: import("@kubernetes/client-node").KubernetesObject}>}
    */
   async createPod(name, namespace, scriptLines, image = 'ubuntu', ...patches) {
     this._assertArrayOfObjects(patches, false);
@@ -635,7 +633,7 @@ ${scriptLines.map(l => '      '+l).join("\n")}
 `;
 
     /**
-     * @type {KubernetesObject}
+     * @type {import("@kubernetes/client-node").KubernetesObject}
      */
     let cmObj;
     try {
@@ -669,7 +667,7 @@ ${scriptLines.map(l => '      '+l).join("\n")}
     restartPolicy: Never
 `;
     /**
-     * @type {KubernetesObject}
+     * @type {import("@kubernetes/client-node").KubernetesObject}
      */
     let podObj;
     try {
@@ -767,7 +765,7 @@ ${scriptLines.map(l => '      '+l).join("\n")}
   /**
    *
    * @param {string} alias
-   * @param  {...AbstractFileOperation} fileOperations
+   * @param  {...import("../fs/fileOperation.cjs").AbstractFileOperation} fileOperations
    * @returns {Promise}
    */
   async pvcFileOperations(alias, ...fileOperations) {
@@ -812,9 +810,9 @@ ${scriptLines.map(l => '      '+l).join("\n")}
     this.watchedResources.add(name, 'Pod', 'v1', name, namespace);
     await this.watchedResources.startWatches();
 
-    /** @type {KubernetesObject} */
+    /** @type {import("@kubernetes/client-node").KubernetesObject} */
     let podObj;
-    /** @type {KubernetesObject} */
+    /** @type {import("@kubernetes/client-node").KubernetesObject} */
     let cmObj;
     try {
       ({podObj, cmObj} = await this.createPod(name, namespace, scriptLines, 'ubuntu', new PodMountPvcPatcher(pvcObj.metadata.name)));
@@ -938,7 +936,7 @@ ${scriptLines.map(l => '      '+l).join("\n")}
   async kindDoesNotExist(kind, apiVersion) {
     try {
       await this.getAllResourcesFromApiVersion(apiVersion);
-    } catch (err) {
+    } catch {
       return;
     }
     throw new Error(`Kind ${kind} of ${apiVersion} exist, but it's expected not to exist.`);
@@ -956,7 +954,7 @@ ${scriptLines.map(l => '      '+l).join("\n")}
     while (true) {
       try {
         list = await this.getAllResourcesFromApiVersion(apiVersion);
-      } catch (err) {
+      } catch {
         await sleep(this.eventuallyPeriodMs);
         continue;
       }

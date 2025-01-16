@@ -6,6 +6,8 @@
     "index": "node ./contrib/scripts/makeIndex.cjs src/step_definitions src/support",
     "dist": "node ./contrib/scripts/build.cjs",
     "test": "jest --runInBand",
+    "lint:fix": "eslint --fix \"src/**/*.cjs\"",
+    "lint": "eslint \"src/**/*.cjs\"",
     "build": "npm run index && npm run dist",
     "cucumber": "cucumber-js ./src/features/**/*.feature -r ./src/step_definitions/**/*.cjs -r ./src/support/**/*.cjs --exit"
   },
@@ -38,8 +40,16 @@
   },
   "devDependencies": {
     "@cucumber/cucumber": "^11.0.1",
+    "@eslint/js": "^9.18.0",
+    "eslint": "^9.18.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-jest": "^28.11.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^5.2.2",
     "glob": "^11.0.0",
     "jest": "^29.7.0",
+    "prettier": "^3.4.2",
     "sinon": "^19.0.2"
   }
 }

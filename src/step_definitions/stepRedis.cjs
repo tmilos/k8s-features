@@ -1,5 +1,4 @@
-const { DataTable, Then } = require('@cucumber/cucumber');
-const { MyWorld } = require('../support/world.cjs');
+const { Then } = require('@cucumber/cucumber');
 const { redisCmd } = require('../support/stepRedis.cjs');
 
 /*
@@ -14,10 +13,10 @@ const { redisCmd } = require('../support/stepRedis.cjs');
 Then(
   'Redis {string} gives {string} with:',
   /**
-   * @this MyWorld
+   * @this import("../support/world.cjs").MyWorld
    * @param {string} cmd
    * @param {string} expectedOutput
-   * @param {DataTable} dataTable
+   * @param {import("@cucumber/cucumber").DataTable} dataTable
    * @returns {Promise}
    */
   async function (cmd, expectedOutput, dataTable) {

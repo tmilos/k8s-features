@@ -2,26 +2,24 @@ const { DataTable } = require('@cucumber/cucumber');
 const { WatchedResources } = require('../support/resourceDeclaration.cjs');
 const { MyWorld } = require('../support/world.cjs');
 const { redisCmd } = require('../support/stepRedis.cjs');
-const { createSandbox, SinonSandbox, SinonStubbedInstance } = require('sinon');
-const { KubernetesObject } = require('@kubernetes/client-node');
-const { AbstractKubernetesObjectPatcher } = require('../k8s/patcher/types.cjs');
+const { createSandbox } = require('sinon');
 const { PodEnvFromSecretPatcher } = require('../k8s/patcher/podEnvFromSecretPatcher.cjs');
 const { logger } = require('../util/logger.cjs');
 
 describe('step Redis cmd', function() {
 
   /**
-   * @type {SinonSandbox}
+   * @type {import("sinon").SinonSandbox}
    */
   let sandbox;
 
   /**
-   * @type {SinonStubbedInstance<MyWorld>}
+   * @type {import("sinon").SinonStubbedInstance<MyWorld>}
    */
   let worldStub;
 
   /**
-   * @type {SinonStubbedInstance<WatchedResources>}
+   * @type {import("sinon").SinonStubbedInstance<WatchedResources>}
    */
   let watechedResourcesStub;
 
@@ -70,10 +68,10 @@ describe('step Redis cmd', function() {
        * @param {string} namespace
        * @param {string[]} scriptLines
        * @param {string} image
-       * @param {...AbstractKubernetesObjectPatcher} patches
-       * @returns {Promise<{podObj: KubernetesObject, cmObj: KubernetesObject}>}
+       * @param {...import("../k8s/patcher/types.cjs").AbstractKubernetesObjectPatcher} patches
+       * @returns {Promise<{podObj: import("@kubernetes/client-node").KubernetesObject, cmObj: import("@kubernetes/client-node").KubernetesObject}>}
        */
-      function(name, namespace, scriptLines, image = 'ubuntu', ...patches) {
+      function(name, namespace) {
         return Promise.resolve({
           podObj: {
             metadata: {

@@ -1,4 +1,3 @@
-const { KubernetesObject } = require('@kubernetes/client-node');
 const { AbstractKubernetesObjectPatcher } = require('./types.cjs');
 
 class PodEnvFixedPatcher extends AbstractKubernetesObjectPatcher {
@@ -15,7 +14,7 @@ class PodEnvFixedPatcher extends AbstractKubernetesObjectPatcher {
 
   /**
    *
-   * @param {KubernetesObject} obj
+   * @param {import("@kubernetes/client-node").KubernetesObject} obj
    */
   patch(obj) {
     if (obj.kind !== 'Pod') {

@@ -1,4 +1,3 @@
-const { KubernetesObject } = require('@kubernetes/client-node');
 const { AbstractPodMountPatcher } = require('./abstractPodMountPatcher.cjs');
 
 class PodMountConfigMapPatcher extends AbstractPodMountPatcher {
@@ -18,7 +17,7 @@ class PodMountConfigMapPatcher extends AbstractPodMountPatcher {
 
   /**
    *
-   * @param {KubernetesObject} obj
+   * @param {import("@kubernetes/client-node").KubernetesObject} obj
    */
   patch(obj) {
     super.patch(obj);

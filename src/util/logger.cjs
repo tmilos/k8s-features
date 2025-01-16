@@ -20,7 +20,7 @@ class MyConsole extends TransportStream {
     console.log(`${colors.brightGreen(timestamp)} ${colors.brightGreen(level.toUpperCase())}: ${message}`);
     for (let k in rest) {
       const v = rest[k];
-      if (true || typeof v === 'object' || typeof v === 'function') {
+      if (typeof v === 'object' || typeof v === 'function') {
         console.log(`  ${colors.gray(k)}: ${inspect(v, undefined, 4)}`);
       }
     }

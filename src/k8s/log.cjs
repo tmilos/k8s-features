@@ -1,4 +1,4 @@
-const { KubeConfig, Log } = require('@kubernetes/client-node');
+const { Log } = require('@kubernetes/client-node');
 const { WritableStreamBuffer } = require('stream-buffers');
 const { sleep } = require('../util/sleep.cjs');
 const { retry } = require('../util/retry.cjs');
@@ -16,7 +16,7 @@ const { retry } = require('../util/retry.cjs');
 
 /**
  *
- * @param {KubeConfig} kc
+ * @param {import("@kubernetes/client-node").KubeConfig} kc
  * @param {string} podName
  * @param {string} namespace
  * @param {string} container
