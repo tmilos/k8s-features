@@ -17,11 +17,14 @@ Then(
 
 /*
   Then HTTP operation succeedes:
-    | Url         | https://example.com |
-    | Method      | POST                |
-    | ContentType | application/json    |
-    | Data        | {"foo": "bar"}      |
+    | Url            | https://example.com |
+    | Method         | POST                |
+    | ContentType    | application/json    |
+    | Data           | {"foo": "bar"}      |
+    | MaxTime        | 10                  |
+    | ExpectedOutput | something           |
 */
+
 Then(
   'HTTP operation succeedes:',
   /**

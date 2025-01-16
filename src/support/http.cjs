@@ -3,10 +3,12 @@ const { makeid } = require('../util/makeId.cjs');
 
 /*
   Then HTTP operation succeedes:
-    | Url         | https://example.com |
-    | Method      | POST                |
-    | ContentType | application/json    |
-    | Data        | {"foo": "bar"}      |
+    | Url            | https://example.com |
+    | Method         | POST                |
+    | ContentType    | application/json    |
+    | Data           | {"foo": "bar"}      |
+    | MaxTime        | 10                  |
+    | ExpectedOutput | something           |
 */
 
 class HttpOptions {
@@ -15,7 +17,6 @@ class HttpOptions {
   contentType = undefined;
   data = undefined;
   maxTime = 10;
-
   expectedOutput = undefined;
 
   /**
@@ -38,6 +39,8 @@ class HttpOptions {
           this.data = world.templateWithThrow(row[1]);
         case 'MaxTime':
           this.maxTime = world.templateWithThrow(row[1]);
+        case 'ExpectedOutput':
+          this.expectedOutput = world.templateWithThrow(row[1]);
         default:
           throw new Error(`Unknown HTTP option ${row[0]}`);
       }
