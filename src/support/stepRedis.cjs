@@ -41,16 +41,16 @@ function mustHaveColumn(rowName, row, index, colName) {
  * @returns {AbstractKubernetesObjectPatcher}
  */
 function envPatcherForParam(world, envVarName, row) {
-  const valueIndicator = world.template(row[1]);
+  const valueIndicator = world.templateWithThrow(row[1]);
   switch (valueIndicator) {
     case 'Secret':
       mustHaveColumn(envVarName, row, 2, 'secret name');
       mustHaveColumn(envVarName, row, 3, 'secret key');
-      return new PodEnvFromSecretPatcher(envVarName, world.template(row[2]), world.template(row[3]));
+      return new PodEnvFromSecretPatcher(envVarName, world.templateWithThrow(row[2]), world.templateWithThrow(row[3]));
     case 'ConfigMap':
       mustHaveColumn(envVarName, row, 2, 'configmap name');
       mustHaveColumn(envVarName, row, 3, 'configmap key');
-      return new PodEnvFromConfigMapPatcher(envVarName, world.template(row[2]), world.template(row[3]));
+      return new PodEnvFromConfigMapPatcher(envVarName, world.templateWithThrow(row[2]), world.templateWithThrow(row[3]));
     default:
       return new PodEnvFixedPatcher(envVarName, valueIndicator);
   }
@@ -70,21 +70,21 @@ function envPatcherForParam(world, envVarName, row) {
  * @returns {VolumePatcherForParamResult}
  */
 function volumePatcherForParam(world, rowName, row, volumeName) {
-  const valueIndicator = world.template(row[1]);
+  const valueIndicator = world.templateWithThrow(row[1]);
   switch (valueIndicator) {
     case 'Secret':
       mustHaveColumn(rowName, row, 2, 'secret name');
       mustHaveColumn(rowName, row, 3, 'secret key');
       return {
-        patcher: new PodMountSecretPatcher(world.template(row[2]), volumeName),
-        key: world.template(row[3]),
+        patcher: new PodMountSecretPatcher(world.templateWithThrow(row[2]), volumeName),
+        key: world.templateWithThrow(row[3]),
       }
     case 'ConfigMap':
       mustHaveColumn(rowName, row, 2, 'configmap name');
       mustHaveColumn(rowName, row, 3, 'configmap key');
       return {
-        patcher: new PodMountConfigMapPatcher(world.template(row[2]), volumeName),
-        key: world.template(row[3]),
+        patcher: new PodMountConfigMapPatcher(world.templateWithThrow(row[2]), volumeName),
+        key: world.templateWithThrow(row[3]),
       }
     default:
       throw new Error(`The Redis param ${rowName} must be specified in secret or configmap`);
@@ -121,7 +121,7 @@ async function redisCmd(world, cmd, expectedOutput, dataTable) {
         patchers.push(envPatcherForParam(world, 'REDISCLI_AUTH', row));
       case 'TLS':
         mustHaveColumn('TLS', row, 1, 'tls enabled');
-        setValues.tls = ['true', 'yes', 'on', '1'].includes(world.template(row[1]).toLocaleLowerCase());
+        setValues.tls = ['true', 'yes', 'on', '1'].includes(world.templateWithThrow(row[1]).toLocaleLowerCase());
         break;
       case 'CA':
         const patch = volumePatcherForParam(world, 'CA', row, 'cacert');
@@ -130,7 +130,7 @@ async function redisCmd(world, cmd, expectedOutput, dataTable) {
         break;
       case 'Version':
         mustHaveColumn('Version', row, 1, 'version');
-        setValues.version = world.template(row[1]);
+        setValues.version = world.templateWithThrow(row[1]);
       default:
         throw new Error(`Unknown Redis parameter ${row[0]}`);
     }

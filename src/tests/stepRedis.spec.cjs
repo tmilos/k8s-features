@@ -44,7 +44,7 @@ describe('step Redis cmd', function() {
     watechedResourcesStub.add.resolves();
     watechedResourcesStub.startWatches.resolves();
 
-    worldStub.template.callsFake(
+    worldStub.templateWithThrow.callsFake(
       /**
        *
        * @param {string} template

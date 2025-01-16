@@ -1,0 +1,32 @@
+name: Terraform PR Checks
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: NPM install
+        shell: bash
+        run: |
+          npm install
+
+      - name: Testing on a k8s Kind Cluster
+        uses: helm/kind-action@v1.4.0
+
+      - name: Create namespace
+        run: |
+          kubectl create namespace k8s-features
+
+      - name: Run tests
+        run: |
+          npm run test

@@ -16,12 +16,14 @@ function retry(fn) {
         try {
           return await fn(...arguments);
         } catch (err2) {
-          if (typeof err.statusCode == 'number' && err.statusCode >= 500) {
+          if (typeof err2.statusCode == 'number' && err2.statusCode >= 500) {
             await sleep(1000);
             return await fn(...arguments);
           }
+          throw err2;
         }
       }
+      throw err;
     }
   }
 }

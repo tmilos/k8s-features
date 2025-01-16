@@ -179,7 +179,7 @@ class MyWorld extends World {
     }
     const ctx = {
       ...this.watchedResources.contextObjects(),
-      namespace: this.parameters.namespace ?? 'default',
+      namespace: (this.parameters && this.parameters.namespace) ?? 'default',
       params: {
         ...this.parameters,
       },
@@ -212,18 +212,6 @@ class MyWorld extends World {
       throw new Error('It seems init() method was not called in Before hook');
     }
     return this.watchedResources.getObj(alias);
-  }
-
-  /**
-   * @param {string} template
-   * @returns {string}
-   */
-  template(template) {
-    try {
-      return this.templateWithThrow(template);
-    } catch {
-      return template;
-    }
   }
 
   /**
@@ -466,7 +454,7 @@ class MyWorld extends World {
           obj,
           errBody: err.body,
           errStack: err.stack,
-        })
+        });
         throw new Error(`Patch error: ${err.body.message}`);
       }
       logger.error('Patch error', err, {
@@ -488,7 +476,7 @@ class MyWorld extends World {
    * @returns {Promise}
    */
   async applyYamlManifest(manifest, item, deleteOnFinish = false) {
-    manifest = this.template('`'+manifest+'`');
+    manifest = this.templateWithThrow('`'+manifest+'`');
     /**
      * @type {KubernetesObject}
      */
