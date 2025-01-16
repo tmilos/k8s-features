@@ -1,4 +1,4 @@
-name: Terraform PR Checks
+name: PR Test
 
 on:
   workflow_dispatch:
