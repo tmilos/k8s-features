@@ -3,6 +3,7 @@ require('./stepApiVersionDoesNotExist.cjs');
 require('./stepApiVersionExists.cjs');
 require('./stepEventuallyKindDoesNotExist.cjs');
 require('./stepEventuallyKindExists.cjs');
+require('./stepHttp.cjs');
 require('./stepKindDoesNotExist.cjs');
 require('./stepKindExists.cjs');
 require('./stepKindsDoNotExist.cjs');
