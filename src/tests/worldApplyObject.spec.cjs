@@ -1,4 +1,5 @@
 const { MyWorld } = require('../support/world.cjs');
+const { logger } = require('../util/logger.cjs');
 const { makeid } = require('../util/makeId.cjs');
 
 describe('world.applyObject', function() {
@@ -10,10 +11,17 @@ describe('world.applyObject', function() {
   let world;
 
   beforeAll(async () => {
+    logger.silent = true;
+
     world = new MyWorld({});
     await world.init();
   });
 
+  afterAll(async () => {
+    if (world) {
+      await world.stopWatches();
+    }
+  });
 
   it('can create a valid ConfigMap as watched resource', async () => {
     await world.addWatchedResources({

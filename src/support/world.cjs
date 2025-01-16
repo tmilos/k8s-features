@@ -408,20 +408,21 @@ class MyWorld extends World {
       if (!obj.metadata) {
         obj.metadata = {};
       }
-      if (obj.metadata.name) {
-        throw new Error(`Declated resource ${item.alias} has name set, and it needs to be empty since name is defined in the resource declaration`);
-      }
-      if (obj.metadata.namespace) {
-        throw new Error(`Declated resource ${item.alias} has namespace set, and it needs to be empty since namespace is defined in the resource declaration`);
+      if (obj.metadata.name && obj.metadata.name != item.name) {
+        throw new Error(`Declated resource ${item.alias} object has name set to ${obj.metadata.name}, but its resource declaration name is defferent: ${item.name}`);
       }
       obj.metadata.name = item.name;
+
+      // if (obj.metadata.namespace) {
+      //   throw new Error(`Declated resource ${item.alias} has namespace set, and it needs to be empty since namespace is defined in the resource declaration`);
+      // }
       if (item.resource.namespaced) {
-        if (item.namespace) {
-          obj.metadata.namespace = item.namespace;
-        } else {
-          item.namespace = this.parameters.namespace ?? 'default';
-          obj.metadata.namespace = item.namespace;
+        const expectedNamespace = item.namespace ?? ((this.parameters && this.parameters.namespace) ?? 'default');
+        if (obj.metadata.namespace && obj.metadata.namespace != expectedNamespace) {
+          throw new Error(`Declated resource ${item.alias} object has namespace set to ${obj.metadata.namespace}, but its resource declaration name is defferent: ${expectedNamespace}`);
         }
+        obj.metadata.namespace = item.namespace;
+        item.namespace = expectedNamespace;
       }
       if (!obj.apiVersion) {
         obj.apiVersion = item.apiVersion;
@@ -690,6 +691,77 @@ ${scriptLines.map(l => '      '+l).join("\n")}
     }
 
     return {podObj, cmObj};
+  }
+
+  /**
+   * @param {import("./http.cjs").HttpOptions} options
+   */
+  async http(options) {
+    const manifest = options.getPodManifest(this.parameters && this.parameters.namespace);
+
+    let obj;
+    try {
+      obj = yamlParse(manifest);
+    } catch (err) {
+      throw new Error(`Unexpected error when parsing http pod manifest ${manifest}: ${err}`, {cause: err});
+    }
+
+    const alias = obj.metadata.name;
+    const namespace = obj.metadata.namespace;
+
+    try {
+      await this.addWatchedResources({
+        alias: obj.metadata.name,
+        kind: 'Pod',
+        apiVersion: 'v1',
+        name: alias,
+        namespace,
+      });
+    } catch (err) {
+      throw new Error(`Error adding http pod as watched resource: ${err}`, {cause: err});
+    }
+
+    try {
+      await this.applyWatchedManifest(alias, manifest, true);
+    } catch (err) {
+      throw new Error(`Error applying http pod ${manifest}: ${err}`, {cause: err});
+    }
+
+    try {
+      await this.eventuallyValueIsOk(
+        `${alias}.status.phase == "Succeeded"`,
+        `${alias}.status.phase == "Failed"`
+      );
+    } catch (err) {
+      logger.error(`Error waiting for http pod to become Succeeded or Failed: ${err}`);
+    }
+
+    /** @type {string} */
+    let logs;
+    try {
+      logs = await this.getLogs(alias, namespace, obj.spec.containers[0].name);
+    } catch (err) {
+      console.error('Error getting Pod logs for http:', inspect(err));
+    }
+
+    const item = this.getItem(alias);
+
+    try {
+      this.delete(item.getObj());
+    } catch (err) {
+      logger.error(`Error deleting http pod: ${err}`);
+    }
+
+    if (item.getObj().status.phase === 'Succeeded') {
+      if (options.expectedOutput) {
+        if (!logs.includes(options.expectedOutput)) {
+          throw new Error(`HTTP expected output was ${options.expectedOutput} but the workload logs are: ${logs}`);
+        }
+      }
+      return;
+    }
+
+    throw new Error(`HTTP operation to url ${options.url} failed. Pod status: ${inspect(item.getObj().status)}. Pod logs: ${logs}`);
   }
 
   /**

@@ -3,9 +3,9 @@
   "version": "1.3.19",
   "main": "lib.cjs",
   "scripts": {
-    "index": "node ./scripts/makeIndex.cjs src/step_definitions src/support",
-    "dist": "node ./scripts/build.cjs",
-    "test": "jest",
+    "index": "node ./contrib/scripts/makeIndex.cjs src/step_definitions src/support",
+    "dist": "node ./contrib/scripts/build.cjs",
+    "test": "jest --runInBand",
     "build": "npm run index && npm run dist",
     "cucumber": "cucumber-js ./src/features/**/*.feature -r ./src/step_definitions/**/*.cjs -r ./src/support/**/*.cjs --exit"
   },

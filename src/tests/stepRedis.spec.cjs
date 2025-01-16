@@ -6,6 +6,7 @@ const { createSandbox, SinonSandbox, SinonStubbedInstance } = require('sinon');
 const { KubernetesObject } = require('@kubernetes/client-node');
 const { AbstractKubernetesObjectPatcher } = require('../k8s/patcher/types.cjs');
 const { PodEnvFromSecretPatcher } = require('../k8s/patcher/podEnvFromSecretPatcher.cjs');
+const { logger } = require('../util/logger.cjs');
 
 describe('step Redis cmd', function() {
 
@@ -33,6 +34,8 @@ describe('step Redis cmd', function() {
   ]);
 
   beforeEach(() => {
+    logger.silent = true;
+
     sandbox = createSandbox();
     watechedResourcesStub = sandbox.createStubInstance(WatchedResources);
     worldStub = sandbox.createStubInstance(MyWorld);

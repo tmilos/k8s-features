@@ -32,6 +32,8 @@ class MyConsole extends TransportStream {
 }
 
 class Logger {
+  silent = false;
+
   constructor() {
     this.logger = createLogger({
       level: 'info',
@@ -59,6 +61,9 @@ class Logger {
    * @param {...any[]} meta
    */
   info() {
+    if (this.silent) {
+      return;
+    }
     this.logger.info(...arguments);
   }
 
@@ -67,6 +72,9 @@ class Logger {
    * @param {...any[]} meta
    */
   warn() {
+    if (this.silent) {
+      return;
+    }
     this.logger.warn(...arguments);
   }
 
@@ -75,11 +83,14 @@ class Logger {
    * @param {...any[]} meta
    */
   error() {
+    if (this.silent) {
+      return;
+    }
     this.logger.error(...arguments);
   }
 }
 
-const logger = new Logger()
+const logger = new Logger();
 
 module.exports = {
   logger,
