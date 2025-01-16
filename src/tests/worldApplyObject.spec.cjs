@@ -3,7 +3,7 @@ const { makeid } = require('../util/makeId.cjs');
 
 describe('world.applyObject', function() {
 
-  const namespace = 'k8s-featutures';
+  const namespace = 'k8s-features';
   const itemName = 'cm';
 
   /** @type {MyWorld} */
