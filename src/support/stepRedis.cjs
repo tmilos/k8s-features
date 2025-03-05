@@ -13,6 +13,7 @@ class RedisCmdGivenParams {
   tls = false;
   ca = '';
   version = '';
+  clusterMode = false;
 }
 
 /**
@@ -131,6 +132,9 @@ async function redisCmd(world, cmd, expectedOutput, dataTable) {
         mustHaveColumn('Version', row, 1, 'version');
         setValues.version = world.templateWithThrow(row[1]);
         break;
+      case 'ClusterMode':
+        mustHaveColumn('ClusterMode', row, 1, 'cluster mode');
+        setValues.clusterMode = ['true', 'yes', 'on', '1'].includes(world.templateWithThrow(row[1]).toLocaleLowerCase());
       default:
         throw new Error(`Unknown Redis parameter ${row[0]}`);
     }
@@ -160,6 +164,9 @@ async function redisCmd(world, cmd, expectedOutput, dataTable) {
   }
   if (setValues.tls) {
     command += ` --tls`;
+  }
+  if(setValues.clusterMode) {
+    command += ' -c'
   }
   if (setValues.ca != '') {
     command += ` --cacert /mnt/cacert/${setValues.ca}`;
