@@ -135,6 +135,7 @@ async function redisCmd(world, cmd, expectedOutput, dataTable) {
       case 'ClusterMode':
         mustHaveColumn('ClusterMode', row, 1, 'cluster mode');
         setValues.clusterMode = ['true', 'yes', 'on', '1'].includes(world.templateWithThrow(row[1]).toLocaleLowerCase());
+        break;
       default:
         throw new Error(`Unknown Redis parameter ${row[0]}`);
     }
