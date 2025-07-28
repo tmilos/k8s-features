@@ -57,3 +57,17 @@ spec:
         name: httpbin
         ports:
         - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: static-httpbin
+  namespace: httpbin
+spec:
+  clusterIP: 10.96.48.1
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: httpbin
+
