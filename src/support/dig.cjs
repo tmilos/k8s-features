@@ -4,7 +4,7 @@ const { MyWorld } = require('./world.cjs');
 const { DataTable } = require('@cucumber/cucumber');
 
 /*
-  Then HTTP operation succeedes:
+  Then dig operation succeedes:
     | Domain         | www.example.com |
     | ExpectedOutput | something       |
 */
