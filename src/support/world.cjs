@@ -763,6 +763,78 @@ ${scriptLines.map(l => '      '+l).join("\n")}
   }
 
   /**
+   * @param {import("./dig.cjs").DigOptions} options
+   */
+  async dig(options) {
+    const manifest = options.getPodManifest(this.parameters && this.parameters.namespace);
+
+    let obj;
+    try {
+      obj = yamlParse(manifest);
+    } catch (err) {
+      throw new Error(`Unexpected error when parsing http dig manifest ${manifest}: ${err}`, {cause: err});
+    }
+
+    const alias = obj.metadata.name;
+    const namespace = obj.metadata.namespace;
+
+    try {
+      await this.addWatchedResources({
+        alias: obj.metadata.name,
+        kind: 'Pod',
+        apiVersion: 'v1',
+        name: alias,
+        namespace,
+      });
+    } catch (err) {
+      throw new Error(`Error adding dig pod as watched resource: ${err}`, {cause: err});
+    }
+
+    try {
+      await this.applyWatchedManifest(alias, manifest, true);
+    } catch (err) {
+      throw new Error(`Error applying dig pod ${manifest}: ${err}`, {cause: err});
+    }
+
+    try {
+      await this.eventuallyValueIsOk(
+        `${alias}.status.phase == "Succeeded"`,
+        `${alias}.status.phase == "Failed"`
+      );
+    } catch (err) {
+      logger.error(`Error waiting for dig pod to become Succeeded or Failed: ${err}`);
+    }
+
+    /** @type {string} */
+    let logs;
+    try {
+      logs = await this.getLogs(alias, namespace, obj.spec.containers[0].name);
+    } catch (err) {
+      console.error('Error getting Pod logs for dig:', inspect(err));
+    }
+
+    const item = this.getItem(alias);
+
+    try {
+      this.delete(item.getObj());
+    } catch (err) {
+      logger.error(`Error deleting dig pod: ${err}`);
+    }
+
+    if (item.getObj().status.phase === 'Succeeded') {
+      if (options.expectedOutput) {
+        if (!logs.includes(options.expectedOutput)) {
+          throw new Error(`Dig expected output was ${options.expectedOutput} but the workload logs are: ${logs}`);
+        }
+      }
+      return;
+    }
+
+    throw new Error(`Dig operation to domain ${options.domain} failed. Pod status: ${inspect(item.getObj().status)}. Pod logs: ${logs}`);
+  }
+
+
+  /**
    *
    * @param {string} alias
    * @param  {...import("../fs/fileOperation.cjs").AbstractFileOperation} fileOperations
