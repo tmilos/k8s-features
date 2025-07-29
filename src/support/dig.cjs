@@ -1,4 +1,3 @@
-const { URL } = require('node:url');
 const { makeid } = require('../util/makeId.cjs');
 const { MyWorld } = require('./world.cjs');
 const { DataTable } = require('@cucumber/cucumber');
