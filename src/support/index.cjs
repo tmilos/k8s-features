@@ -1,3 +1,4 @@
+require('./dig.cjs');
 require('./http.cjs');
 require('./resourceDeclaration.cjs');
 require('./stepRedis.cjs');
