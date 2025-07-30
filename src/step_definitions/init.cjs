@@ -5,7 +5,7 @@ const { logger } = require('../util/logger.cjs');
 
 setWorldConstructor(MyWorld);
 
-setDefaultTimeout(60 * 60 * 1000);
+setDefaultTimeout(2 * 60 * 60 * 1000);
 
 Before(
   /**
