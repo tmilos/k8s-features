@@ -53,7 +53,7 @@ class MyWorld extends World {
 
     this.eventuallyPeriodMs = 500;
 
-    this.eventuallyTimeoutSeconds = 3600;
+    this.eventuallyTimeoutSeconds = 2 * 3600;
 
     /**
      * @type {import("./resourceDeclaration.cjs").WatchedResources | undefined}
