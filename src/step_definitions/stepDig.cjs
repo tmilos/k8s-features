@@ -8,7 +8,7 @@ Then(
    * @param {string} domain
    * @param {string} ip
    */
-  async function(url) {
+  async function(domain, ip) {
     const options = new DigOptions();
     options.domain = domain;
     options.expectedOutput = ip
