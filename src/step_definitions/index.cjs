@@ -1,10 +1,10 @@
 require('./init.cjs');
 require('./stepApiVersionDoesNotExist.cjs');
 require('./stepApiVersionExists.cjs');
+require('./stepDig.cjs');
 require('./stepEventuallyKindDoesNotExist.cjs');
 require('./stepEventuallyKindExists.cjs');
 require('./stepHttp.cjs');
-require('./stepDig.cjs');
 require('./stepKindDoesNotExist.cjs');
 require('./stepKindExists.cjs');
 require('./stepKindsDoNotExist.cjs');
