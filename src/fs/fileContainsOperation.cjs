@@ -23,7 +23,7 @@ class FileContainsOperation extends AbstractFileOperation {
       `FILE=${rootDir}/${this.path}`,
       `DIR=${rootDir}`,
       `CONTENT="${this.content}"`,
-      `if ! grep $CONTENT $FILE; then`,
+      `if ! grep "$CONTENT" "$FILE"; then`,
       `  echo "content '$CONTENT' not found"`,
       `  echo "directory '$DIR' content:"`,
       `  ls -la $DIR`,
