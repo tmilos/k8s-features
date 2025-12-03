@@ -913,6 +913,9 @@ ${scriptLines.map(l => '      '+l).join("\n")}
       throw new Error(`Error getting Pod logs for PVC operation: ${err}`, {cause: err});
     }
 
+    console.log("pvc op logs:");
+    console.log(logs);
+
     try {
       await this.delete(podObj);
     } catch (err) {
