@@ -649,7 +649,7 @@ ${scriptLines.map(l => '      '+l).join("\n")}
       throw new Error(`Error creating ConfigMap for Pod: ${err}\n${cmManifest}`, {cause: err});
     }
     console.log("created pod configmap:")
-    console.log(inspect(cmObj))
+    console.log(inspect(cmObj, {depth: 5}))
 
     const podManifest = `
   apiVersion: v1
@@ -664,6 +664,7 @@ ${scriptLines.map(l => '      '+l).join("\n")}
         imagePullPolicy: IfNotPresent
         command:
           - "/bin/bash"
+          - "-c"
         args:
           - "/script/${name}/${name}.sh"
     restartPolicy: Never
@@ -689,8 +690,8 @@ ${scriptLines.map(l => '      '+l).join("\n")}
       console.error(inspect(err));
       throw new Error(`Error creating pod: ${err}\n${podManifest}\n---\n${cmManifest}\n`, {cause: err});
     }
-    console.log("created pod:")
-    console.log(inspect(podObj))
+    console.log("created pod:");
+    console.log(inspect(podObj, {depth: 5}));
 
     return {podObj, cmObj};
   }
@@ -934,11 +935,15 @@ ${scriptLines.map(l => '      '+l).join("\n")}
       throw new Error(`Error deleting ConfigMap for PVC operation: ${err}`, {cause: err});
     }
 
-    if (failed || logs.indexOf(allDone) !== -1) {
-      return;
+    if (failed) {
+      throw new Error(`PVC ${alias} file operations failed: ${"\n"+logs}`);
     }
 
-    throw new Error(`PVC ${alias} file operations failed: ${"\n"+logs}`);
+    if (logs.indexOf(allDone) == -1) {
+      throw new Error(`PVC ${alias} file operations did not succeeded: ${"\n"+logs}`);
+    }
+
+    return
   }
 
   /**
