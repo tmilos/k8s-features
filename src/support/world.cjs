@@ -648,6 +648,8 @@ ${scriptLines.map(l => '      '+l).join("\n")}
       console.error(inspect(err));
       throw new Error(`Error creating ConfigMap for Pod: ${err}\n${cmManifest}`, {cause: err});
     }
+    console.log("created pod configmap:")
+    console.log(inspect(cmObj))
 
     const podManifest = `
   apiVersion: v1
@@ -687,6 +689,8 @@ ${scriptLines.map(l => '      '+l).join("\n")}
       console.error(inspect(err));
       throw new Error(`Error creating pod: ${err}\n${podManifest}\n---\n${cmManifest}\n`, {cause: err});
     }
+    console.log("created pod:")
+    console.log(inspect(podObj))
 
     return {podObj, cmObj};
   }
